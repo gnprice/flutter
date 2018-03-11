@@ -120,6 +120,8 @@ class ScrollPositionWithSingleContext extends ScrollPosition implements ScrollAc
     if (newActivity == null)
       return;
     assert(newActivity.delegate == this);
+    if (!(newActivity is IdleScrollActivity && activity is IdleScrollActivity))
+      debugPrint("activity ${activity} -> ${newActivity}");
     super.beginActivity(newActivity);
     _currentDrag?.dispose();
     _currentDrag = null;

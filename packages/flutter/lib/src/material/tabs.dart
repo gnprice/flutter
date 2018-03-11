@@ -20,6 +20,8 @@ import 'tab_controller.dart';
 import 'tab_indicator.dart';
 import 'theme.dart';
 
+import 'dart:developer';
+
 const double _kTabHeight = 46.0;
 const double _kTextAndIconTabHeight = 72.0;
 
@@ -1125,7 +1127,9 @@ class _TabBarViewState extends State<TabBarView> {
 
     _pageController.jumpToPage(initialPage);
 
+    debugPrint("warp start");
     await _pageController.animateToPage(_currentIndex, duration: kTabScrollDuration, curve: Curves.ease);
+    debugPrint("warp end: ${_pageController.position.activity}");
     if (!mounted)
       return new Future<Null>.value();
 
@@ -1145,6 +1149,7 @@ class _TabBarViewState extends State<TabBarView> {
 
     _warpUnderwayCount += 1;
     if (notification is ScrollUpdateNotification) {
+      debugPrint("handle update");
       if (_controller.indexIsChanging) {
         _controller.stop();
       } else {
@@ -1155,6 +1160,12 @@ class _TabBarViewState extends State<TabBarView> {
         _controller.offset = (_pageController.page - _controller.index).clamp(-1.0, 1.0);
       }
     } else if (notification is ScrollEndNotification) {
+      debugPrint("handle end: ${_currentIndex} -> ${_pageController.page.round()}");
+      /*
+      final ScrollPosition position = _pageController.position;
+      final double pageTolerance = position.physics.tolerance.distance
+          / (position.viewportDimension * _pageController.viewportFraction);
+      */
       _controller.index = _pageController.page.round();
       _currentIndex = _controller.index;
     }
