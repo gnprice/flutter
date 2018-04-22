@@ -163,6 +163,10 @@ class TabController extends ChangeNotifier {
     _changeIndex(value, duration: duration, curve: curve);
   }
 
+  void stop() {
+    _animationController.stop();
+  }
+
   /// The difference between the [animation]'s value and [index]. The offset
   /// value must be between -1.0 and 1.0.
   ///
