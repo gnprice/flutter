@@ -117,10 +117,12 @@ class TabController extends ChangeNotifier {
     _index = value;
     if (duration != null) {
       _indexIsChangingCount += 1;
+      debugPrint("animation start: i${index} ch${_indexIsChangingCount} v${_animationController.value}");
       notifyListeners(); // Because the value of indexIsChanging may have changed.
       _animationController
         .animateTo(_index.toDouble(), duration: duration, curve: curve)
         .whenCompleteOrCancel(() {
+          debugPrint("animation complete: i${index} ch${_indexIsChangingCount} v${_animationController.value}");
           _indexIsChangingCount -= 1;
           notifyListeners();
         });
@@ -160,6 +162,7 @@ class TabController extends ChangeNotifier {
   /// While the animation is running [indexIsChanging] is true. When the
   /// animation completes [offset] will be 0.0.
   void animateTo(int value, { Duration duration: kTabScrollDuration, Curve curve: Curves.ease }) {
+    debugPrint("animate -> ${value} over ${duration}");
     _changeIndex(value, duration: duration, curve: curve);
   }
 

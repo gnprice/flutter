@@ -1149,15 +1149,16 @@ class _TabBarViewState extends State<TabBarView> {
 
     _warpUnderwayCount += 1;
     if (notification is ScrollUpdateNotification) {
-      debugPrint("handle update");
       if (_controller.indexIsChanging) {
         _controller.stop();
       } else {
         if ((_pageController.page - _controller.index).abs() > 1.0) {
+          debugPrint("handle big update: ${_controller.index} -> ${_pageController.page.floor()}");
           _controller.index = _pageController.page.floor();
           _currentIndex = _controller.index;
         }
         _controller.offset = (_pageController.page - _controller.index).clamp(-1.0, 1.0);
+        debugPrint("handle update: ${_controller.offset}");
       }
     } else if (notification is ScrollEndNotification) {
       debugPrint("handle end: ${_currentIndex} -> ${_pageController.page.round()}");
