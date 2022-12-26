@@ -38,7 +38,7 @@ export 'package:flutter/gestures.dart' show
 ///
 ///  * [RenderProxySliver], a base class for render slivers that resemble their
 ///    children.
-class RenderProxyBox extends RenderBox with RenderObjectWithChildMixin<RenderBox>, RenderProxyBoxMixin<RenderBox> {
+class RenderProxyBox extends RenderBox with RenderObjectWithChildMixin<RenderBox> {
   /// Creates a proxy render box.
   ///
   /// Proxy render boxes are rarely created directly because they proxy
@@ -47,16 +47,7 @@ class RenderProxyBox extends RenderBox with RenderObjectWithChildMixin<RenderBox
   RenderProxyBox([RenderBox? child]) {
     this.child = child;
   }
-}
 
-/// Implementation of [RenderProxyBox].
-///
-/// Use this mixin in situations where the proxying behavior
-/// of [RenderProxyBox] is desired but inheriting from [RenderProxyBox] is
-/// impractical (e.g. because you want to mix in other classes as well).
-// TODO(ianh): Remove this class once https://github.com/dart-lang/sdk/issues/31543 is fixed
-@optionalTypeArgs
-mixin RenderProxyBoxMixin<T extends RenderBox> on RenderBox, RenderObjectWithChildMixin<T> {
   @override
   void setupParentData(RenderObject child) {
     // We don't actually use the offset argument in BoxParentData, so let's
@@ -1103,7 +1094,7 @@ mixin RenderAnimatedOpacityMixin<T extends RenderObject> on RenderObjectWithChil
 ///
 /// This is a variant of [RenderOpacity] that uses an [Animation<double>] rather
 /// than a [double] to control the opacity.
-class RenderAnimatedOpacity extends RenderProxyBox with RenderProxyBoxMixin, RenderAnimatedOpacityMixin<RenderBox> {
+class RenderAnimatedOpacity extends RenderProxyBox with RenderAnimatedOpacityMixin<RenderBox> {
   /// Creates a partially transparent render object.
   ///
   /// The [opacity] argument must not be null.
