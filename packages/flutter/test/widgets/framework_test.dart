@@ -23,6 +23,30 @@ void main() {
     expect(key, isNot(equals(new UniqueKey())));
   });
 
+  testWidgets(
+      'MultiChildRenderObjectElement.updateChildren test',
+      (WidgetTester tester) async {
+    // Regression test for https://github.com/flutter/flutter/issues/120762.
+    final GlobalKey globalKey = new GlobalKey();
+    await tester.pumpWidget(new Column(
+      children: <Widget>[
+        new SizedBox(),
+        new SizedBox(key: globalKey),
+        new SizedBox(),
+      ],
+    ));
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(new Column(
+      children: <Widget>[
+        new SizedBox(),
+        new SizedBox(),
+        new SizedBox(child: new SizedBox(key: globalKey)),
+      ],
+    ));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ObjectKey control test', (WidgetTester tester) async {
     final Object a = new Object();
     final Object b = new Object();
