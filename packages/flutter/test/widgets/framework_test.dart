@@ -30,7 +30,6 @@ void main() {
     final GlobalKey globalKey = new GlobalKey();
     await tester.pumpWidget(new Column(
       children: <Widget>[
-        new SizedBox(),
         new SizedBox(key: globalKey),
         new SizedBox(),
       ],
@@ -39,7 +38,6 @@ void main() {
 
     await tester.pumpWidget(new Column(
       children: <Widget>[
-        new SizedBox(),
         new SizedBox(),
         new SizedBox(child: new SizedBox(key: globalKey)),
       ],

@@ -4330,12 +4330,14 @@ abstract class RenderObjectElement extends Element {
       final Element oldChild = replaceWithNullIfForgotten(oldChildren[oldChildrenTop]);
       final Widget newWidget = newWidgets[newChildrenTop];
       assert(oldChild == null || oldChild._debugLifecycleState == _ElementLifecycle.active);
+      print("updating top at $oldChildrenTop / $newChildrenTop: oldChild $oldChild, canUpdate ${Widget.canUpdate(oldChild.widget, newWidget)}");
       if (oldChild == null || !Widget.canUpdate(oldChild.widget, newWidget))
         break;
       final Element newChild = updateChild(oldChild, newWidget, previousChild);
       assert(newChild._debugLifecycleState == _ElementLifecycle.active);
       newChildren[newChildrenTop] = newChild;
       previousChild = newChild;
+      print("updated top: $oldChildrenTop / $newChildrenTop");
       newChildrenTop += 1;
       oldChildrenTop += 1;
     }
@@ -4347,6 +4349,7 @@ abstract class RenderObjectElement extends Element {
       assert(oldChild == null || oldChild._debugLifecycleState == _ElementLifecycle.active);
       if (oldChild == null || !Widget.canUpdate(oldChild.widget, newWidget))
         break;
+      print("skip bottom: $oldChildrenBottom / $newChildrenBottom");
       oldChildrenBottom -= 1;
       newChildrenBottom -= 1;
     }
@@ -4360,11 +4363,13 @@ abstract class RenderObjectElement extends Element {
         final Element oldChild = replaceWithNullIfForgotten(oldChildren[oldChildrenTop]);
         assert(oldChild == null || oldChild._debugLifecycleState == _ElementLifecycle.active);
         if (oldChild != null) {
+          print("scan middle at $oldChildrenTop: key ${oldChild.widget.key}");
           if (oldChild.widget.key != null)
             oldKeyedChildren[oldChild.widget.key] = oldChild;
           else
             deactivateChild(oldChild);
         }
+        print("scan middle: $oldChildrenTop");
         oldChildrenTop += 1;
       }
     }
@@ -4389,16 +4394,19 @@ abstract class RenderObjectElement extends Element {
           }
         }
       }
+      print("updating middle at $newChildrenTop: oldChild $oldChild, canUpdate ${oldChild != null ? Widget.canUpdate(oldChild.widget, newWidget) : null}");
       assert(oldChild == null || Widget.canUpdate(oldChild.widget, newWidget));
       final Element newChild = updateChild(oldChild, newWidget, previousChild);
       assert(newChild._debugLifecycleState == _ElementLifecycle.active);
       assert(oldChild == newChild || oldChild == null || oldChild._debugLifecycleState != _ElementLifecycle.active);
       newChildren[newChildrenTop] = newChild;
       previousChild = newChild;
+      print("update middle: $newChildrenTop");
       newChildrenTop += 1;
     }
 
     // We've scanned the whole list.
+    print("all scanned: tops $oldChildrenTop / $newChildrenTop");
     assert(oldChildrenTop == oldChildrenBottom + 1);
     assert(newChildrenTop == newChildrenBottom + 1);
     assert(newWidgets.length - newChildrenTop == oldChildren.length - oldChildrenTop);
@@ -4412,11 +4420,13 @@ abstract class RenderObjectElement extends Element {
       assert(oldChild._debugLifecycleState == _ElementLifecycle.active);
       final Widget newWidget = newWidgets[newChildrenTop];
       assert(Widget.canUpdate(oldChild.widget, newWidget));
+      print("will update bottom: $newChildrenTop / $oldChildrenTop");
       final Element newChild = updateChild(oldChild, newWidget, previousChild);
       assert(newChild._debugLifecycleState == _ElementLifecycle.active);
       assert(oldChild == newChild || oldChild == null || oldChild._debugLifecycleState != _ElementLifecycle.active);
       newChildren[newChildrenTop] = newChild;
       previousChild = newChild;
+      print("updated bottom: $newChildrenTop / $oldChildrenTop");
       newChildrenTop += 1;
       oldChildrenTop += 1;
     }
