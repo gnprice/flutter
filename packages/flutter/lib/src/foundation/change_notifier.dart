@@ -309,15 +309,17 @@ class ChangeNotifier implements Listenable {
     }
   }
 
-  /// Discards any resources used by the object. After this is called, the
-  /// object is not in a usable state and should be discarded (calls to
-  /// [addListener] will throw after the object is disposed).
+  /// Discard any resources used by the object, leaving it no longer usable.
   ///
   /// This method should only be called by the object's owner.
   ///
   /// This method does not notify listeners, and clears the listener list once
   /// it is called. Consumers of this class must decide on whether to notify
-  /// listeners or not immediately before disposal.
+  /// listeners immediately before disposal, or not to do so.
+  ///
+  /// After this is called, the object is not in a usable state and
+  /// should be discarded. No further calls should be made to any of
+  /// the object's methods except [removeListener], which has no effect.
   @mustCallSuper
   void dispose() {
     assert(ChangeNotifier.debugAssertNotDisposed(this));
