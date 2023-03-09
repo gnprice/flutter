@@ -42,6 +42,7 @@ function _rmlock () {
 # Determines which lock method to use, based on what is available on the system.
 # Returns a non-zero value if the lock was not acquired, zero if acquired.
 function _lock () {
+  >&2 echo "attempting lock: $$"
   if hash flock 2>/dev/null; then
     flock --nonblock --exclusive 7 2>/dev/null
   elif hash shlock 2>/dev/null; then
@@ -87,6 +88,7 @@ function _lock () {
 # closed. The mkdir lock is released via an exit trap from the subshell that
 # deletes the lock directory.
 function _wait_for_lock () {
+  >&2 echo "waiting for lock: $$"
   FLUTTER_UPGRADE_LOCK="$FLUTTER_ROOT/bin/cache/.upgrade_lock"
   local waiting_message_displayed
   while ! _lock "$FLUTTER_UPGRADE_LOCK"; do
@@ -99,6 +101,7 @@ function _wait_for_lock () {
     fi
     sleep .1;
   done
+  >&2 echo "got lock: $$"
   if [[ $waiting_message_displayed == "true" ]]; then
     # Clear the waiting message so it doesn't overlap any following text.
     printf "                                                                  \r" >&2;
@@ -124,6 +127,8 @@ function upgrade_flutter () (
   #  * Contents of STAMP_PATH is not what we are going to compile, or
   #  * pubspec.yaml last modified after pubspec.lock
   if [[ ! -f "$SNAPSHOT_PATH" || ! -s "$STAMP_PATH" || "$(cat "$STAMP_PATH")" != "$compilekey" || "$FLUTTER_TOOLS_DIR/pubspec.yaml" -nt "$FLUTTER_TOOLS_DIR/pubspec.lock" ]]; then
+    ls -l --full-time "$SNAPSHOT_PATH" "$STAMP_PATH" "$FLUTTER_TOOLS_DIR"/pubspec.{yaml,lock}
+
     # Waits for the update lock to be acquired. Placing this check inside the
     # conditional allows the majority of flutter/dart installations to bypass
     # the lock entirely, but as a result this required a second verification that
@@ -139,6 +144,7 @@ function upgrade_flutter () (
     rm -f "$FLUTTER_ROOT/version"
     touch "$FLUTTER_ROOT/bin/cache/.dartignore"
     "$FLUTTER_ROOT/bin/internal/update_dart_sdk.sh"
+    >&2 echo 'Dart SDK updated (or is it?)'
 
     >&2 echo Building flutter tool...
 
@@ -196,6 +202,7 @@ function shared::execute() {
   DART_SDK_PATH="$FLUTTER_ROOT/bin/cache/dart-sdk"
 
   DART="$DART_SDK_PATH/bin/dart"
+  #DART=dart
 
   # If running over git-bash, overrides the default UNIX executables with win32
   # executables
@@ -228,6 +235,7 @@ function shared::execute() {
     exit 1
   fi
 
+  #>&2 echo "will upgrade flutter: $$"
   upgrade_flutter 7< "$PROG_NAME"
 
   BIN_NAME="$(basename "$PROG_NAME")"
