@@ -6,7 +6,7 @@
 // dependencies have been fixed.
 // https://github.com/flutter/flutter/issues/85160
 // Fails with "flutter test --test-randomize-ordering-seed=123"
-@Tags(<String>['no-shuffle'])
+// @Tags(<String>['no-shuffle'])
 library;
 
 import 'package:flutter/gestures.dart';
@@ -3052,7 +3052,8 @@ void main() {
     ));
 
     final Offset location = tester.getCenter(find.text('Source'));
-    await tester.startGesture(location, pointer: 7);
+    final gesture = await tester.startGesture(location, pointer: 7);
+    addTearDown(gesture.cancel);
 
     expect(dragAnchorStrategyCalled, true);
   });
@@ -3155,6 +3156,7 @@ void main() {
 
     final Offset location = tester.getCenter(find.text('Target'));
     final TestGesture gesture = await tester.startGesture(location, pointer: 7);
+    addTearDown(gesture.cancel);
     await tester.pump(kLongPressTimeout);
 
     final Offset secondLocation = location + const Offset(7.0, 7.0);
@@ -3267,7 +3269,8 @@ Future<void> _testLongPressDraggableHapticFeedback({ required WidgetTester teste
   expect(onDragStartedCalled, isFalse);
 
   final Offset firstLocation = tester.getCenter(find.text('Source'));
-  await tester.startGesture(firstLocation, pointer: 7);
+  final TestGesture gesture = await tester.startGesture(firstLocation, pointer: 7);
+  addTearDown(gesture.cancel);
   await tester.pump();
 
   expect(find.text('Source'), findsOneWidget);
