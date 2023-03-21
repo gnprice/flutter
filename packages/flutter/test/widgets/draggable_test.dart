@@ -183,20 +183,26 @@ void main() {
             child: Text('Source'),
           ),
           DragTarget<int>(
+            key: Key('target1'),
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
               return const SizedBox(height: 100.0, child: Text('Target 1'));
             },
             onLeave: (Object? data) {
+              print('onLeave 1');
+              print(StackTrace.current);
               if (data is int) {
                 leftBehind['Target 1'] = leftBehind['Target 1']! + data;
               }
             },
           ),
           DragTarget<int>(
+            key: Key('target2'),
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
               return const SizedBox(height: 100.0, child: Text('Target 2'));
             },
             onLeave: (Object? data) {
+              print('onLeave 2');
+              print(StackTrace.current);
               if (data is int) {
                 leftBehind['Target 2'] = leftBehind['Target 2']! + data;
               }
@@ -210,6 +216,7 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset firstLocation = tester.getCenter(find.text('Source'));
+    print('starting');
     final TestGesture gesture = await tester.startGesture(firstLocation, pointer: 7);
     await tester.pump();
 
@@ -217,6 +224,7 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset secondLocation = tester.getCenter(find.text('Target 1'));
+    print('moving 1');
     await gesture.moveTo(secondLocation);
     await tester.pump();
 
@@ -224,18 +232,21 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset thirdLocation = tester.getCenter(find.text('Target 2'));
+    print('moving 2');
     await gesture.moveTo(thirdLocation);
     await tester.pump();
 
     expect(leftBehind['Target 1'], equals(1));
     expect(leftBehind['Target 2'], equals(0));
 
+    print('moving 3');
     await gesture.moveTo(secondLocation);
     await tester.pump();
 
     expect(leftBehind['Target 1'], equals(1));
     expect(leftBehind['Target 2'], equals(1));
 
+    print('gesture.up');
     await gesture.up();
     await tester.pump();
 
@@ -1450,8 +1461,8 @@ void main() {
     expect(find.text('Rejected'), findsNothing);
 
     final Offset firstLocation = tester.getTopLeft(find.text('Source'));
-    final TestGesture gesture =
-    await tester.startGesture(firstLocation, pointer: 7);
+    final TestGesture gesture = await tester.startGesture(firstLocation, pointer: 7);
+    addTearDown(gesture.cancel);
     await tester.pump();
 
     expect(find.text('Dragging'), findsOneWidget);
@@ -3126,7 +3137,8 @@ void main() {
     );
 
     final Offset location = tester.getCenter(find.text('Target'));
-    final TestGesture gesture = await tester.startGesture(location, pointer: 7);
+    final TestGesture gesture = await tester.startGesture(location);
+    addTearDown(gesture.cancel);
     final Offset secondLocation = location + const Offset(7.0, 7.0);
     await gesture.moveTo(secondLocation);
     await tester.pump();
