@@ -19,6 +19,7 @@ import 'package:test_api/test_api.dart' as test_package show Timeout; // ignore:
 import 'package:vector_math/vector_math_64.dart';
 
 import '_binding_io.dart' if (dart.library.html) '_binding_web.dart' as binding;
+import 'controller.dart';
 import 'goldens.dart';
 import 'platform.dart';
 import 'restoration.dart';
@@ -1144,6 +1145,8 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
     keyEventManager.clearState();
     // ignore: invalid_use_of_visible_for_testing_member
     RendererBinding.instance.initMouseTracker();
+
+    WidgetController.resetNextPointer();
   }
 }
 

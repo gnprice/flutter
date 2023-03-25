@@ -1133,6 +1133,8 @@ abstract class WidgetController {
     return result;
   }
 
+  static void resetNextPointer() => _nextPointer = 1;
+
   TestGesture _createGesture({
     int? pointer,
     required PointerDeviceKind kind,
