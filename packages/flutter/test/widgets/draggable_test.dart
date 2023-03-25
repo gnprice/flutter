@@ -18,6 +18,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'semantics_tester.dart';
 
 void main() {
+  // debugDragAvatar = true;
+
   tearDown(() {
     TestPointer.checkNoDownPointers();
   });

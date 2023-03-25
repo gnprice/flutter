@@ -812,7 +812,7 @@ class _DragAvatar<T extends Object> extends Drag {
 
     if (debugDragAvatar) {
       print('updateDrag: $globalPosition');
-      print(StackTrace.current);
+      // print(StackTrace.current);
     }
     final List<_DragTargetState<Object>> targets = _getDragTargets(result.path).toList();
     if (debugDragAvatar)
