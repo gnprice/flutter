@@ -1036,6 +1036,7 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
   void _endOfTestVerifications() {
     verifyTickersWereDisposed('at the end of the test');
     _verifySemanticsHandlesWereDisposed();
+    TestPointer.verifyPointersWereReleased(when: 'at the end of the test');
   }
 
   void _verifySemanticsHandlesWereDisposed() {

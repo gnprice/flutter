@@ -40,10 +40,19 @@ class TestPointer {
     }
   }
 
-  static void checkNoDownPointers() {
+  static void verifyPointersWereReleased({String when = 'when none should have been'}) {
     final int numDownPointers = _downPointers.length;
     _downPointers.clear();
-    assert(numDownPointers == 0, 'No pointers should remain down.');
+    if (numDownPointers != 0) {
+      throw FlutterError.fromParts(<DiagnosticsNode>[
+        ErrorSummary('A TestPointer was down $when.'),
+        ErrorDescription('All test pointers must be released by calling up() or cancel().'),
+        ErrorHint(
+          'If the pointer was created through a TestGesture, the pointer '
+          'can be released by calling up() or cancel() on the TestGesture.'
+        ),
+      ]);
+    }
   }
   static final Set<int> _downPointers = {};
 

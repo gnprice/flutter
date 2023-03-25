@@ -13,10 +13,6 @@ import 'semantics_tester.dart';
 void main() {
   // debugDragAvatar = true;
 
-  tearDown(() {
-    TestPointer.checkNoDownPointers();
-  });
-
   testWidgets('Drag and drop - control test', (WidgetTester tester) async {
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
