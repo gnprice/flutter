@@ -169,6 +169,8 @@ void main() {
   });
 
   testWidgets('Drag and drop - onLeave callback fires correctly', (WidgetTester tester) async {
+    debugDragAvatar = true;
+
     final Map<String,int> leftBehind = <String,int>{
       'Target 1': 0,
       'Target 2': 0,
@@ -216,7 +218,7 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset firstLocation = tester.getCenter(find.text('Source'));
-    print('starting');
+    print('starting: $firstLocation');
     final TestGesture gesture = await tester.startGesture(firstLocation, pointer: 7);
     await tester.pump();
 
@@ -224,7 +226,7 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset secondLocation = tester.getCenter(find.text('Target 1'));
-    print('moving 1');
+    print('moving 1: $secondLocation');
     await gesture.moveTo(secondLocation);
     await tester.pump();
 
@@ -232,7 +234,7 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset thirdLocation = tester.getCenter(find.text('Target 2'));
-    print('moving 2');
+    print('moving 2: $thirdLocation');
     await gesture.moveTo(thirdLocation);
     await tester.pump();
 
@@ -252,6 +254,8 @@ void main() {
 
     expect(leftBehind['Target 1'], equals(1));
     expect(leftBehind['Target 2'], equals(1));
+
+    debugDragAvatar = false;
   });
 
   // Regression test for https://github.com/flutter/flutter/issues/76825

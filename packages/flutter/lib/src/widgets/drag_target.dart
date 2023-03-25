@@ -744,6 +744,8 @@ class _DragTargetState<T extends Object> extends State<DragTarget<T>> {
 enum _DragEndKind { dropped, canceled }
 typedef _OnDragEnd = void Function(Velocity velocity, Offset offset, bool wasAccepted);
 
+bool debugDragAvatar = false;
+
 // The lifetime of this object is a little dubious right now. Specifically, it
 // lives as long as the pointer is down. Arguably it should self-immolate if the
 // overlay goes away. _DraggableState has some delicate logic to continue
@@ -811,7 +813,13 @@ class _DragAvatar<T extends Object> extends Drag {
     final HitTestResult result = HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPosition + feedbackOffset);
 
+    print('updateDrag: $globalPosition');
+    if (debugDragAvatar) {
+      print(StackTrace.current);
+    }
     final List<_DragTargetState<Object>> targets = _getDragTargets(result.path).toList();
+    if (debugDragAvatar)
+      print('targets: $targets');
 
     bool listsMatch = false;
     if (targets.length >= _enteredTargets.length && _enteredTargets.isNotEmpty) {
@@ -842,6 +850,9 @@ class _DragAvatar<T extends Object> extends Drag {
       (_DragTargetState<Object>? target) {
         if (target == null) {
           return false;
+        }
+        if (debugDragAvatar) {
+          print('entering: $target, widget: ${target.widget}');
         }
         _enteredTargets.add(target);
         return target.didEnter(this);
