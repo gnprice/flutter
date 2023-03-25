@@ -111,7 +111,26 @@ class Theme extends StatelessWidget {
       if (debugDisallowFallbackTheme && inheritedTheme == null) {
         throw FlutterError.fromParts([
           ErrorSummary('Theme.of() resorted to the fallback theme when it should not have.'),
-          // TODO write more
+          ErrorDescription(
+            'When debugDisallowFallbackTheme is set to true, each call to Theme.of() '
+            'must be from a context with an enclosing Theme widget.'
+          ),
+          ErrorHint(
+            'Ordinarily, when Theme.of() is called without an enclosing Theme widget, '
+            'it returns a fallback theme.  '
+            'This fallback theme is computed once, lazily, and then cached.'
+          ),
+          ErrorHint(
+            'In a test, if debugDefaultTargetPlatformOverride has been set, '
+            'then attempting to use the fallback theme will interfere with any other test '
+            'that uses the fallback theme and has not set debugDefaultTargetPlatformOverride '
+            'to the same value.  '
+            'In order to prevent this interference, when a test uses TargetPlatformVariant, '
+            'debugDisallowFallbackTheme is set to true.'
+          ),
+          ErrorHint(
+            'To fix the issue, include a Theme widget near the root of your tree.'
+          ),
         ]);
       }
       return true;
