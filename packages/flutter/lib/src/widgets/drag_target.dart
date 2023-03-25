@@ -704,11 +704,8 @@ class _DragTargetState<T extends Object> extends State<DragTarget<T>> {
       _candidateAvatars.remove(avatar);
       _rejectedAvatars.remove(avatar);
     });
-    if (widget.key == Key('target2')) {
-      print('yo, target 2!');
-      // throw avatar;
-    }
-    print("didLeave $avatar from $this / $widget -> ${widget.onLeave}");
+    if (debugDragAvatar)
+      print("didLeave $avatar from $this / $widget -> ${widget.onLeave}");
     widget.onLeave?.call(avatar.data as T?);
   }
 
@@ -813,8 +810,8 @@ class _DragAvatar<T extends Object> extends Drag {
     final HitTestResult result = HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPosition + feedbackOffset);
 
-    print('updateDrag: $globalPosition');
     if (debugDragAvatar) {
+      print('updateDrag: $globalPosition');
       print(StackTrace.current);
     }
     final List<_DragTargetState<Object>> targets = _getDragTargets(result.path).toList();
@@ -885,7 +882,7 @@ class _DragAvatar<T extends Object> extends Drag {
   }
 
   void _leaveAllEntered() {
-    if (_enteredTargets.isNotEmpty)
+    if (debugDragAvatar && _enteredTargets.isNotEmpty)
       print("leaveAllEntered: $_enteredTargets");
     for (int i = 0; i < _enteredTargets.length; i += 1) {
       _enteredTargets[i].didLeave(this);

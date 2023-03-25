@@ -188,8 +188,6 @@ void main() {
               return const SizedBox(height: 100.0, child: Text('Target 1'));
             },
             onLeave: (Object? data) {
-              print('onLeave 1');
-              print(StackTrace.current);
               if (data is int) {
                 leftBehind['Target 1'] = leftBehind['Target 1']! + data;
               }
@@ -201,8 +199,6 @@ void main() {
               return const SizedBox(height: 100.0, child: Text('Target 2'));
             },
             onLeave: (Object? data) {
-              print('onLeave 2');
-              print(StackTrace.current);
               if (data is int) {
                 leftBehind['Target 2'] = leftBehind['Target 2']! + data;
               }
@@ -216,7 +212,6 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset firstLocation = tester.getCenter(find.text('Source'));
-    print('starting: $firstLocation');
     final TestGesture gesture = await tester.startGesture(firstLocation, pointer: 7);
     await tester.pump();
 
@@ -224,7 +219,6 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset secondLocation = tester.getCenter(find.text('Target 1'));
-    print('moving 1: $secondLocation');
     await gesture.moveTo(secondLocation);
     await tester.pump();
 
@@ -232,21 +226,18 @@ void main() {
     expect(leftBehind['Target 2'], equals(0));
 
     final Offset thirdLocation = tester.getCenter(find.text('Target 2'));
-    print('moving 2: $thirdLocation');
     await gesture.moveTo(thirdLocation);
     await tester.pump();
 
     expect(leftBehind['Target 1'], equals(1));
     expect(leftBehind['Target 2'], equals(0));
 
-    print('moving 3');
     await gesture.moveTo(secondLocation);
     await tester.pump();
 
     expect(leftBehind['Target 1'], equals(1));
     expect(leftBehind['Target 2'], equals(1));
 
-    print('gesture.up');
     await gesture.up();
     await tester.pump();
 
