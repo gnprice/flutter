@@ -3109,6 +3109,7 @@ void main() {
 
     final Offset location = tester.getCenter(find.text('Target'));
     final TestGesture gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(gesture.cancel);
     await gesture.addPointer(location: location);
 
     await gesture.down(location);
