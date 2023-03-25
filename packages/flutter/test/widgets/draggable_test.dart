@@ -11,8 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'semantics_tester.dart';
 
 void main() {
-  // debugDragAvatar = true;
-
   testWidgets('Drag and drop - control test', (WidgetTester tester) async {
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
@@ -178,7 +176,6 @@ void main() {
             child: Text('Source'),
           ),
           DragTarget<int>(
-            key: Key('target1'),
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
               return const SizedBox(height: 100.0, child: Text('Target 1'));
             },
@@ -189,7 +186,6 @@ void main() {
             },
           ),
           DragTarget<int>(
-            key: Key('target2'),
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
               return const SizedBox(height: 100.0, child: Text('Target 2'));
             },
@@ -3060,7 +3056,7 @@ void main() {
     ));
 
     final Offset location = tester.getCenter(find.text('Source'));
-    final gesture = await tester.startGesture(location, pointer: 7);
+    final TestGesture gesture = await tester.startGesture(location, pointer: 7);
     addTearDown(gesture.cancel);
 
     expect(dragAnchorStrategyCalled, true);
