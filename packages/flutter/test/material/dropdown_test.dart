@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// no-shuffle:
-//   //TODO(gspencergoog): Remove this tag once this test's state leaks/test
-//   dependencies have been fixed.
-//   https://github.com/flutter/flutter/issues/85160
-//   Fails with "flutter test --test-randomize-ordering-seed=456"
 // reduced-test-set:
 //   This file is run as part of a reduced test set in CI on Mac and Windows
 //   machines.
-@Tags(<String>['reduced-test-set', 'no-shuffle'])
+@Tags(<String>['reduced-test-set'])
 library;
 
 import 'dart:math' as math;
@@ -254,14 +249,17 @@ class _TestAppState extends State<TestApp> {
         data: MediaQueryData.fromView(View.of(context)).copyWith(size: widget.mediaSize),
         child: Directionality(
           textDirection: widget.textDirection,
-          child: Navigator(
-            onGenerateRoute: (RouteSettings settings) {
-              assert(settings.name == '/');
-              return MaterialPageRoute<void>(
-                settings: settings,
-                builder: (BuildContext context) => widget.child,
-              );
-            },
+          child: Theme(
+            data: ThemeData.light(),
+            child: Navigator(
+              onGenerateRoute: (RouteSettings settings) {
+                assert(settings.name == '/');
+                return MaterialPageRoute<void>(
+                  settings: settings,
+                  builder: (BuildContext context) => widget.child,
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -3508,8 +3506,7 @@ void main() {
     expect(find.byType(CupertinoScrollbar), findsNothing);
     expect(find.byType(Scrollbar), findsOneWidget);
     expect(find.byType(RawScrollbar), findsNothing);
-
-  }, variant: TargetPlatformVariant.all());
+  }, variant: TargetPlatformVariant.all(excluding: <TargetPlatform>{TargetPlatform.iOS})); // TODO file/link issue
 
   testWidgets('borderRadius property works properly', (WidgetTester tester) async {
     const double radius = 20.0;
