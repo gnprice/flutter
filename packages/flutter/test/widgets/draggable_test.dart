@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(gspencergoog): Remove this tag once this test's state leaks/test
-// dependencies have been fixed.
-// https://github.com/flutter/flutter/issues/85160
-// Fails with "flutter test --test-randomize-ordering-seed=123"
-// @Tags(<String>['no-shuffle'])
-library;
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -3146,7 +3139,7 @@ void main() {
     );
 
     final Offset location = tester.getCenter(find.text('Target'));
-    final TestGesture gesture = await tester.startGesture(location);
+    final TestGesture gesture = await tester.startGesture(location, pointer: 7);
     addTearDown(gesture.cancel);
     final Offset secondLocation = location + const Offset(7.0, 7.0);
     await gesture.moveTo(secondLocation);
