@@ -11,6 +11,8 @@ import 'typography.dart';
 
 export 'theme_data.dart' show Brightness, ThemeData;
 
+bool debugDisallowFallbackTheme = false;
+
 /// The duration over which theme changes animate by default.
 const Duration kThemeAnimationDuration = Duration(milliseconds: 200);
 
@@ -105,6 +107,15 @@ class Theme extends StatelessWidget {
   /// ```
   static ThemeData of(BuildContext context) {
     final _InheritedTheme? inheritedTheme = context.dependOnInheritedWidgetOfExactType<_InheritedTheme>();
+    assert(() {
+      if (debugDisallowFallbackTheme && inheritedTheme == null) {
+        throw FlutterError.fromParts([
+          ErrorSummary('Theme.of() resorted to the fallback theme when it should not have.'),
+          // TODO write more
+        ]);
+      }
+      return true;
+    }());
     final MaterialLocalizations? localizations = Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
     final ScriptCategory category = localizations?.scriptCategory ?? ScriptCategory.englishLike;
     final ThemeData theme = inheritedTheme?.theme.data ?? _kFallbackTheme;

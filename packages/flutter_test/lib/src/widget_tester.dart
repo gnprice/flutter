@@ -5,7 +5,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart' show Tooltip;
+import 'package:flutter/material.dart' show Tooltip, debugDisallowFallbackTheme;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -286,12 +286,14 @@ class TargetPlatformVariant extends TestVariant<TargetPlatform> {
   Future<TargetPlatform?> setUp(TargetPlatform value) async {
     final TargetPlatform? previousTargetPlatform = debugDefaultTargetPlatformOverride;
     debugDefaultTargetPlatformOverride = value;
+    debugDisallowFallbackTheme = true;
     return previousTargetPlatform;
   }
 
   @override
   Future<void> tearDown(TargetPlatform value, TargetPlatform? memento) async {
     debugDefaultTargetPlatformOverride = memento;
+    debugDisallowFallbackTheme = false; // TODO save/restore
   }
 }
 
