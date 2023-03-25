@@ -704,8 +704,6 @@ class _DragTargetState<T extends Object> extends State<DragTarget<T>> {
       _candidateAvatars.remove(avatar);
       _rejectedAvatars.remove(avatar);
     });
-    if (debugDragAvatar)
-      print("didLeave $avatar from $this / $widget -> ${widget.onLeave}");
     widget.onLeave?.call(avatar.data as T?);
   }
 
@@ -740,8 +738,6 @@ class _DragTargetState<T extends Object> extends State<DragTarget<T>> {
 
 enum _DragEndKind { dropped, canceled }
 typedef _OnDragEnd = void Function(Velocity velocity, Offset offset, bool wasAccepted);
-
-bool debugDragAvatar = false;
 
 // The lifetime of this object is a little dubious right now. Specifically, it
 // lives as long as the pointer is down. Arguably it should self-immolate if the
@@ -810,13 +806,7 @@ class _DragAvatar<T extends Object> extends Drag {
     final HitTestResult result = HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPosition + feedbackOffset);
 
-    if (debugDragAvatar) {
-      print('updateDrag: $globalPosition');
-      // print(StackTrace.current);
-    }
     final List<_DragTargetState<Object>> targets = _getDragTargets(result.path).toList();
-    if (debugDragAvatar)
-      print('targets: $targets');
 
     bool listsMatch = false;
     if (targets.length >= _enteredTargets.length && _enteredTargets.isNotEmpty) {
@@ -847,9 +837,6 @@ class _DragAvatar<T extends Object> extends Drag {
       (_DragTargetState<Object>? target) {
         if (target == null) {
           return false;
-        }
-        if (debugDragAvatar) {
-          print('entering: $target, widget: ${target.widget}');
         }
         _enteredTargets.add(target);
         return target.didEnter(this);
@@ -882,8 +869,6 @@ class _DragAvatar<T extends Object> extends Drag {
   }
 
   void _leaveAllEntered() {
-    if (debugDragAvatar && _enteredTargets.isNotEmpty)
-      print("leaveAllEntered: $_enteredTargets");
     for (int i = 0; i < _enteredTargets.length; i += 1) {
       _enteredTargets[i].didLeave(this);
     }

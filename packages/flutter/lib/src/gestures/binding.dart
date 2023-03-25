@@ -366,7 +366,6 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
   void _handlePointerEventImmediately(PointerEvent event) {
     HitTestResult? hitTestResult;
     if (event is PointerDownEvent || event is PointerSignalEvent || event is PointerHoverEvent || event is PointerPanZoomStartEvent) {
-      // print('handling pointer ${event.pointer}: $event');
       assert(!_hitTests.containsKey(event.pointer), 'Pointer of ${event.toString(minLevel: DiagnosticLevel.debug)} unexpectedly has a HitTestResult associated with it.');
       hitTestResult = HitTestResult();
       hitTest(hitTestResult, event.position);
@@ -380,7 +379,6 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
         return true;
       }());
     } else if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPanZoomEndEvent) {
-      // print('canceling pointer ${event.pointer}: $event');
       hitTestResult = _hitTests.remove(event.pointer);
     } else if (event.down || event is PointerPanZoomUpdateEvent) {
       // Because events that occur with the pointer down (like
