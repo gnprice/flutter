@@ -156,6 +156,7 @@ void testWidgets(
           semanticsHandle = tester.ensureSemantics();
         }
         test_package.addTearDown(binding.postTest);
+        test_package.addTearDown(tester._tearDown);
         return binding.runTest(
           () async {
             binding.reset(); // TODO(ianh): the binding should just do this itself in _runTest
@@ -427,6 +428,7 @@ Future<void> benchmarkWidgets(
     semanticsHandle = tester.ensureSemantics();
   }
   tester._recordNumberOfSemanticsHandles();
+  test_package.addTearDown(tester._tearDown);
   return binding.runTest(
     () async {
       await callback(tester);
@@ -1036,7 +1038,6 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
   void _endOfTestVerifications() {
     verifyTickersWereDisposed('at the end of the test');
     _verifySemanticsHandlesWereDisposed();
-    TestPointer.verifyPointersWereReleased(when: 'at the end of the test');
   }
 
   void _verifySemanticsHandlesWereDisposed() {
@@ -1062,6 +1063,10 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
 
   void _recordNumberOfSemanticsHandles() {
     _lastRecordedSemanticsHandles = _currentSemanticsHandles;
+  }
+
+  void _tearDown() {
+    TestPointer.verifyPointersWereReleased(when: 'at the end of the test');
   }
 
   /// Returns the TestTextInput singleton.
