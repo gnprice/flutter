@@ -169,8 +169,6 @@ void main() {
   });
 
   testWidgets('Drag and drop - onLeave callback fires correctly', (WidgetTester tester) async {
-    debugDragAvatar = true;
-
     final Map<String,int> leftBehind = <String,int>{
       'Target 1': 0,
       'Target 2': 0,
@@ -254,8 +252,6 @@ void main() {
 
     expect(leftBehind['Target 1'], equals(1));
     expect(leftBehind['Target 2'], equals(1));
-
-    debugDragAvatar = false;
   });
 
   // Regression test for https://github.com/flutter/flutter/issues/76825
