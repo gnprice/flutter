@@ -279,6 +279,8 @@ class TargetPlatformVariant extends TestVariant<TargetPlatform> {
   @override
   final Set<TargetPlatform> values;
 
+  static bool shouldDisallowFallbackTheme = false;
+
   @override
   String describeValue(TargetPlatform value) => value.toString();
 
@@ -286,14 +288,18 @@ class TargetPlatformVariant extends TestVariant<TargetPlatform> {
   Future<TargetPlatform?> setUp(TargetPlatform value) async {
     final TargetPlatform? previousTargetPlatform = debugDefaultTargetPlatformOverride;
     debugDefaultTargetPlatformOverride = value;
-    debugDisallowFallbackTheme = true;
+    if (shouldDisallowFallbackTheme) {
+      debugDisallowFallbackTheme = true;
+    }
     return previousTargetPlatform;
   }
 
   @override
   Future<void> tearDown(TargetPlatform value, TargetPlatform? memento) async {
     debugDefaultTargetPlatformOverride = memento;
-    debugDisallowFallbackTheme = false; // TODO save/restore
+    if (shouldDisallowFallbackTheme) {
+      debugDisallowFallbackTheme = false; // TODO save/restore
+    }
   }
 }
 
