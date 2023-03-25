@@ -1125,15 +1125,13 @@ abstract class WidgetController {
   /// [startGesture] method is called without an explicit pointer identifier.
   int get nextPointer => _nextPointer;
 
-  static int _nextPointer = 1;
+  int _nextPointer = 1;
 
-  static int _getNextPointer() {
+  int _getNextPointer() {
     final int result = _nextPointer;
     _nextPointer += 1;
     return result;
   }
-
-  static void resetNextPointer() => _nextPointer = 1;
 
   TestGesture _createGesture({
     int? pointer,
