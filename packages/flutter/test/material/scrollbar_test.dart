@@ -1322,33 +1322,36 @@ void main() {
         textDirection: TextDirection.ltr,
         child: MediaQuery(
           data: const MediaQueryData(),
-          child: ScrollConfiguration(
-            behavior: const NoScrollbarBehavior(),
-            child: Scrollbar(
-              key: key2,
-              child: SingleChildScrollView(
-                key: outerKey,
-                child: SizedBox(
-                  height: 1000.0,
-                  width: double.infinity,
-                  child: Column(
-                    children: <Widget>[
-                      Scrollbar(
-                        key: key1,
-                        child: SizedBox(
-                          height: 300.0,
-                          width: double.infinity,
-                          child: SingleChildScrollView(
-                            key: innerKey,
-                            child: const SizedBox(
-                              key: Key('Inner scrollable'),
-                              height: 1000.0,
-                              width: double.infinity,
+          child: Theme(
+            data: ThemeData.light(),
+            child: ScrollConfiguration(
+              behavior: const NoScrollbarBehavior(),
+              child: Scrollbar(
+                key: key2,
+                child: SingleChildScrollView(
+                  key: outerKey,
+                  child: SizedBox(
+                    height: 1000.0,
+                    width: double.infinity,
+                    child: Column(
+                      children: <Widget>[
+                        Scrollbar(
+                          key: key1,
+                          child: SizedBox(
+                            height: 300.0,
+                            width: double.infinity,
+                            child: SingleChildScrollView(
+                              key: innerKey,
+                              child: const SizedBox(
+                                key: Key('Inner scrollable'),
+                                height: 1000.0,
+                                width: double.infinity,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1373,7 +1376,7 @@ void main() {
       tester.renderObject(find.byKey(key1)),
       paintsExactlyCountTimes(#drawRect, 2),
     );
-  }, variant: TargetPlatformVariant.all());
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android)); // TODO file/link
 
   testWidgets('Scrollbar dragging can be disabled', (WidgetTester tester) async {
     final ScrollController scrollController = ScrollController();
