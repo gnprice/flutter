@@ -1130,7 +1130,6 @@ abstract class WidgetController {
   static int _getNextPointer() {
     final int result = _nextPointer;
     _nextPointer += 1;
-    print("auto pointer: $result");
     return result;
   }
 
