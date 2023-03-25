@@ -18,6 +18,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'semantics_tester.dart';
 
 void main() {
+  tearDown(() {
+    TestPointer.checkNoDownPointers();
+  });
+
   testWidgets('Drag and drop - control test', (WidgetTester tester) async {
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
