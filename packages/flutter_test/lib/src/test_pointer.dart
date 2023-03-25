@@ -599,6 +599,22 @@ class TestGesture {
     });
   }
 
+  Future<void> forget() {
+    return TestAsyncUtils.guard<void>(() async {
+      if (_pointer.kind == PointerDeviceKind.trackpad) {
+        if (_pointer._isPanZoomActive) {
+          await _dispatcher(_pointer.panZoomEnd());
+        }
+        assert(!_pointer._isPanZoomActive);
+      } else {
+        if (_pointer.isDown) {
+          await _dispatcher(_pointer.up());
+        }
+        assert(!_pointer.isDown);
+      }
+    });
+  }
+
   /// Dispatch a pointer pan zoom start event at the given `location`, caching the
   /// hit test result.
   Future<void> panZoomStart(Offset location, { Duration timeStamp = Duration.zero }) async {

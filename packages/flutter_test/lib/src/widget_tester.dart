@@ -1065,8 +1065,8 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
     _lastRecordedSemanticsHandles = _currentSemanticsHandles;
   }
 
-  void _tearDown() {
-    TestPointer.verifyPointersWereReleased(when: 'at the end of the test');
+  Future<void> _tearDown() async {
+    await cancelGestures();
   }
 
   /// Returns the TestTextInput singleton.

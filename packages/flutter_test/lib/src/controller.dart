@@ -1133,17 +1133,21 @@ abstract class WidgetController {
     return result;
   }
 
+  static final Set<TestGesture> _gestures = <TestGesture>{};
+
   TestGesture _createGesture({
     int? pointer,
     required PointerDeviceKind kind,
     required int buttons,
   }) {
-    return TestGesture(
+    final TestGesture gesture = TestGesture(
       dispatcher: sendEventToBinding,
       kind: kind,
       pointer: pointer ?? _getNextPointer(),
       buttons: buttons,
     );
+    _gestures.add(gesture);
+    return gesture;
   }
 
   /// Creates gesture and returns the [TestGesture] object which you can use
@@ -1187,6 +1191,12 @@ abstract class WidgetController {
       await result.down(downLocation);
     }
     return result;
+  }
+
+  Future<void> cancelGestures() async {
+    for (final TestGesture gesture in _gestures) {
+      await gesture.forget();
+    }
   }
 
   /// Forwards the given location to the binding's hitTest logic.
