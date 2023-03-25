@@ -3350,6 +3350,7 @@ Future<void> _testChildAnchorFeedbackPosition({ required WidgetTester tester, do
 
   final Offset firstLocation = tester.getCenter(find.text('Source'));
   final TestGesture gesture = await tester.startGesture(firstLocation, pointer: 7);
+  addTearDown(gesture.cancel);
   await tester.pump();
 
   expect(accepted, isEmpty);
