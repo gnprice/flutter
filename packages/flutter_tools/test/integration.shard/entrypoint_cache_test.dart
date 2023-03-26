@@ -210,6 +210,10 @@ class TestFlutterTree {
   String get binDart => root.childDirectory('bin').childFile('dart').path;
   String get binFlutter => root.childDirectory('bin').childFile('flutter').path;
 
+  Directory get toolsPackageDir => root.childDirectory('packages').childDirectory('flutter_tools');
+
+  String headRevision() => runSyncSuccess(['git', 'rev-parse', 'HEAD']).shellOutput;
+
   ProcessResult runSyncSuccess(
     List<String> command, {
     Map<String, String>? environment,
@@ -256,5 +260,25 @@ Future<void> main() async {
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
     expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
+  });
+
+  test('a commit on pubspec.yaml invalidates cache', () async {
+    final TestFlutterTree tree = TestFlutterTree.takeWarm();
+
+    tree.toolsPackageDir.childFile('pubspec.yaml').writeAsStringSync(
+      '\n', mode: FileMode.append,
+    );
+    tree.runSyncSuccess(['git', 'commit', '-am', 'touch pubspec.yaml']);
+
+    final String revision = tree.headRevision();
+    final String stampValue = flutterToolsStampValue(revision: revision);
+    final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
+    final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
+    // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
+    processManager.runSyncSuccess([tree.binFlutter]);
+    // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
+    expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
+    expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
+    expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
   });
 }
