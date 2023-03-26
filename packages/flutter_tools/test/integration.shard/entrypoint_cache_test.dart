@@ -69,6 +69,20 @@ extension ProcessManagerExtension on ProcessManager {
   }
 }
 
+String asShellOutput(String raw) {
+  return raw.replaceFirst(RegExp(r'\n*$'), '');
+}
+
+extension FileExtension on File {
+  String? readLikeShell() {
+    try {
+      return asShellOutput(readAsStringSync());
+    } on FileSystemException {
+      return null;
+    }
+  }
+}
+
 extension ProcessResultExtension on ProcessResult {
   /// The command's output, as shell command substitution `$(…)` would take it.
   ///
@@ -80,19 +94,31 @@ extension ProcessResultExtension on ProcessResult {
   String get shellOutput {
     final dynamic stdout = this.stdout;
     switch (stdout) {
-      case String(): return stdout.replaceFirst(RegExp(r'\n*$'), '');
+      case String(): return asShellOutput(stdout);
       case List<int>(): throw UnimplementedError();
       default: throw Error(); // forbidden by contract of [output]
     }
   }
 }
 
+/// A temporary copy of the Flutter tree, to be freely mutated for testing.
+///
+/// This is a real Git worktree in the real filesystem.
+/// To save resources, it reuses the Git object and pack files from
+/// the Flutter tree that these tests are found in.
+///
+/// Successive test cases can reuse the tree by calling [TestFlutterTree.take],
+/// which will reset it to its original state.
+///
+/// After all tests have run, [TestFlutterTree.dispose] should be called
+/// in order to delete the temporary tree.
 class TestFlutterTree {
+  /// Take the shared global tree, resetting it to a pristine state.
   factory TestFlutterTree.take() {
     return (_instance ??= TestFlutterTree._create()).._reset();
   } 
 
-  TestFlutterTree._(this._baseRevision, this.root);
+  TestFlutterTree._(this.baseRevision, this.root);
 
   factory TestFlutterTree._create() {
     final String baseRevision = processManager.runSyncSuccess(<String>[
@@ -111,7 +137,7 @@ class TestFlutterTree {
   static TestFlutterTree? _instance;
 
   final Directory root;
-  final String _baseRevision;
+  final String baseRevision;
 
   void _initialize() {
     processManager.runSyncSuccess(<String>[
@@ -125,7 +151,7 @@ class TestFlutterTree {
   }
 
   void _reset() {
-    runSyncSuccess(<String>['git', 'checkout', '-B', 'main', _baseRevision]);
+    runSyncSuccess(<String>['git', 'checkout', '-B', 'main', baseRevision]);
     runSyncSuccess(<String>[
       'git', 'clean',
       '--quiet',
@@ -142,6 +168,9 @@ class TestFlutterTree {
       // ignore
     }
   }
+
+  String get binDart => root.childDirectory('bin').childFile('dart').path;
+  String get binFlutter => root.childDirectory('bin').childFile('flutter').path;
 
   ProcessResult runSyncSuccess(
     List<String> command, {
@@ -162,11 +191,35 @@ class TestFlutterTree {
   }
 }
 
+/// Some expected behavior of the entrypoint cache, in terms of [TestFlutterTree].
+extension FlutterTreeCacheExtension on TestFlutterTree {
+  Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache');
+
+  File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot');
+  File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp');
+}
+
+/// The value the entrypoint writes into bin/cache/flutter_tools.stamp .
+String flutterToolsStampValue({required String revision, String toolArgs = ''}) {
+  return '$revision:$toolArgs';
+}
+
 Future<void> main() async {
   tearDownAll(TestFlutterTree.dispose);
 
   test('when nothing changes, cache is hit', () async {
     final TestFlutterTree tree = TestFlutterTree.take();
-    // TODO write test
+    expect(tree.flutterToolsStampFile.readLikeShell(), null);
+
+    final String stampValue = flutterToolsStampValue(revision: tree.baseRevision);
+    processManager.runSyncSuccess([tree.binFlutter]);
+    expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
+
+    final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
+    final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
+    processManager.runSyncSuccess([tree.binFlutter]);
+    expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
+    expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
+    expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
   });
 }
