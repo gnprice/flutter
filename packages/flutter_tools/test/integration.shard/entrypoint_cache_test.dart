@@ -241,7 +241,7 @@ extension FlutterTreeCacheExtension on TestFlutterTree {
   File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp');
 }
 
-/// The value the entrypoint writes into bin/cache/flutter_tools.stamp .
+/// The value the entrypoint writes into `flutterToolsStampFile`.
 String flutterToolsStampValue({required String revision, String toolArgs = ''}) {
   return '$revision:$toolArgs';
 }
@@ -281,4 +281,10 @@ Future<void> main() async {
     expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
     expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
   });
+
+  // TODO borrow bin/cache/dart-sdk/ from main tree, to save downloading
+  // TODO copy uncommitted changes from main tree
+
+  // TODO test commits to bin/flutter_tools.dart and to lib/
+  // TODO test commits to test/, to framework, to examples
 }
