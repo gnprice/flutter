@@ -101,6 +101,14 @@ extension ProcessResultExtension on ProcessResult {
   }
 }
 
+void rsyncTreesSync(Directory source, Directory target) {
+  processManager.runSyncSuccess(<String>[
+    'rsync', '-a', '--delete',
+    source.path + Platform.pathSeparator,
+    target.path + Platform.pathSeparator,
+  ]);
+}
+
 /// A temporary copy of the Flutter tree, to be freely mutated for testing.
 ///
 /// This is a real Git worktree in the real filesystem.
@@ -116,7 +124,36 @@ class TestFlutterTree {
   /// Take the shared global tree, resetting it to a pristine state.
   factory TestFlutterTree.take() {
     return (_instance ??= TestFlutterTree._create()).._reset();
-  } 
+  }
+
+  /// Take the shared global tree, resetting it to a warm-cache state.
+  ///
+  /// This is equivalent to [TestFlutterTree.take()] followed by a command
+  /// that causes the entrypoint script to build the tool.  For example:
+  /// ```dart
+  ///   final TestFlutterTree tree = TestFlutterTree.take();
+  ///   processManager.runSyncSuccess([tree.binFlutter]);
+  /// ```
+  ///
+  /// This differs in that the tree is memoized and subsequently copied from
+  /// the memoized version, which is much faster than compiling again.
+  factory TestFlutterTree.takeWarm() {
+    final TestFlutterTree tree = TestFlutterTree.take();
+    if (_warmTree != null) {
+      rsyncTreesSync(_warmTree!, tree.root);
+      return tree;
+    }
+
+    assert(tree.flutterToolsStampFile.readLikeShell() == null);
+    final String stampValue = flutterToolsStampValue(revision: tree.baseRevision);
+    processManager.runSyncSuccess(<String>[tree.binFlutter]);
+    assert(tree.flutterToolsStampFile.readLikeShell() == stampValue);
+
+    _warmTree = fileSystem
+      .systemTempDirectory.createTempSync('flutter_test_tree_warm.').absolute;
+    rsyncTreesSync(tree.root, _warmTree!);
+    return tree;
+  }
 
   TestFlutterTree._(this.baseRevision, this.root);
 
@@ -125,7 +162,7 @@ class TestFlutterTree {
       'git', '-C', flutterRoot.path, 'rev-parse', 'HEAD',
     ]).shellOutput;
     final Directory root = fileSystem
-        .systemTempDirectory.createTempSync('flutter_test_tree.').absolute;
+      .systemTempDirectory.createTempSync('flutter_test_tree.').absolute;
     return TestFlutterTree._(baseRevision, root).._initialize();
   }
 
@@ -135,6 +172,7 @@ class TestFlutterTree {
   }
 
   static TestFlutterTree? _instance;
+  static Directory? _warmTree;
 
   final Directory root;
   final String baseRevision;
@@ -208,11 +246,8 @@ Future<void> main() async {
   tearDownAll(TestFlutterTree.dispose);
 
   test('when nothing changes, cache is hit', () async {
-    final TestFlutterTree tree = TestFlutterTree.take();
-    expect(tree.flutterToolsStampFile.readLikeShell(), null);
-
+    final TestFlutterTree tree = TestFlutterTree.takeWarm();
     final String stampValue = flutterToolsStampValue(revision: tree.baseRevision);
-    processManager.runSyncSuccess([tree.binFlutter]);
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
 
     final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
