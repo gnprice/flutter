@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
@@ -36,8 +37,23 @@ String shellEscapeCommand(List<String> command) {
 }
 
 extension ProcessManagerExtension on ProcessManager {
-  ProcessResult runSyncSuccess(List<String> command) {
-    final ProcessResult result = runSync(command);
+  ProcessResult runSyncSuccess(
+    List<String> command, {
+    String? workingDirectory,
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    // no runInShell; keep that always false
+    Encoding? stdoutEncoding = systemEncoding,
+    Encoding? stderrEncoding = systemEncoding,
+  }) {
+    final ProcessResult result = runSync(
+      command,
+      workingDirectory: workingDirectory,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      stdoutEncoding: stdoutEncoding,
+      stderrEncoding: stderrEncoding,
+    );
     if (result.exitCode != 0) {
       throw Exception(
         'child process exited with code ${result.exitCode}\n'
@@ -109,9 +125,9 @@ class TestFlutterTree {
   }
 
   void _reset() {
-    runGitSuccess(<String>['checkout', '-B', 'main', _baseRevision]);
-    runGitSuccess(<String>[
-      'clean',
+    runSyncSuccess(<String>['git', 'checkout', '-B', 'main', _baseRevision]);
+    runSyncSuccess(<String>[
+      'git', 'clean',
       '--quiet',
       '--force',
       '-d', // directories too
@@ -127,8 +143,22 @@ class TestFlutterTree {
     }
   }
 
-  ProcessResult runGitSuccess(List<String> command) {
-    return processManager.runSyncSuccess(<String>['git', '-C', root.path, ...command]);
+  ProcessResult runSyncSuccess(
+    List<String> command, {
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    // no runInShell; keep that always false
+    Encoding? stdoutEncoding = systemEncoding,
+    Encoding? stderrEncoding = systemEncoding,
+  }) {
+    return processManager.runSyncSuccess(
+      command,
+      workingDirectory: root.path,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      stdoutEncoding: stdoutEncoding,
+      stderrEncoding: stderrEncoding,
+    );
   }
 }
 
@@ -137,7 +167,6 @@ Future<void> main() async {
 
   test('when nothing changes, cache is hit', () async {
     final TestFlutterTree tree = TestFlutterTree.take();
-    print("tree: ${tree.root.path}");
     // TODO write test
   });
 }
