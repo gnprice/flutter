@@ -17,18 +17,38 @@ const ProcessManager processManager = LocalProcessManager();
 final String flutterRootPath = getFlutterRoot();
 final Directory flutterRoot = fileSystem.directory(flutterRootPath).absolute;
 
+/// Matches only strings that a shell will always parse as a single literal word.
+///
+/// Some strings that a shell would in fact accept as a single literal word
+/// will not match this pattern.  This pattern should only be used when
+/// an error in that direction would be merely cosmetic.
+final RegExp _definitelyShellLiteralWordRegExp = RegExp(r'^[a-zA-Z0-9./,_-]+$');
+
+String shellEscapeArgument(String value) {
+  if (_definitelyShellLiteralWordRegExp.hasMatch(value)) {
+    return value;
+  }
+  return "'${value.replaceAll("'", r"'\''")}'";
+}
+
+String shellEscapeCommand(List<String> command) {
+  return command.map(shellEscapeArgument).join(' ');
+}
+
 extension ProcessManagerExtension on ProcessManager {
   ProcessResult runSyncSuccess(List<String> command) {
-    final result = runSync(command);
-    expect(result.exitCode, 0,
-      reason: 'child process exited with code ${result.exitCode}\n'
-        'command: $command\n'
+    final ProcessResult result = runSync(command);
+    if (result.exitCode != 0) {
+      throw Exception(
+        'child process exited with code ${result.exitCode}\n'
+        'command: ${shellEscapeCommand(command)}\n'
         'stdout: ================================================================\n'
         '${result.stdout}\n'
         'stderr: ================================================================\n'
         '${result.stderr}\n'
-        'end ===================================================================='
-    );
+        'end ====================================================================',
+      );
+    }
     return result;
   }
 }
@@ -79,7 +99,7 @@ class TestFlutterTree {
 
   void _initialize() {
     processManager.runSyncSuccess(<String>[
-      'git', 'clone', '--mirror',
+      'git', 'clone',
       '--shared',
       '--origin', 'origin',
       flutterRoot.childDirectory('.git').path,
@@ -116,10 +136,8 @@ Future<void> main() async {
   tearDownAll(TestFlutterTree.dispose);
 
   test('when nothing changes, cache is hit', () async {
-    final tree = TestFlutterTree.take();
-
-    print(tree.root);
-    await Future.delayed(Duration(seconds: 1000));
+    final TestFlutterTree tree = TestFlutterTree.take();
+    print("tree: ${tree.root.path}");
     // TODO write test
   });
 }
