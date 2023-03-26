@@ -613,15 +613,18 @@ void main() {
 
   testWidgets('iOS selection handles scale with rich text (selection style 1)', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const CupertinoApp(
-        home: Center(
-          child: SelectableText.rich(
-            TextSpan(
-              children: <InlineSpan>[
-                TextSpan(text: 'abc ', style: TextStyle(fontSize: 100.0)),
-                TextSpan(text: 'def ', style: TextStyle(fontSize: 50.0)),
-                TextSpan(text: 'hij', style: TextStyle(fontSize: 25.0)),
-              ],
+      Theme(
+        data: ThemeData.light(),
+        child: const CupertinoApp(
+          home: Center(
+            child: SelectableText.rich(
+              TextSpan(
+                children: <InlineSpan>[
+                  TextSpan(text: 'abc ', style: TextStyle(fontSize: 100.0)),
+                  TextSpan(text: 'def ', style: TextStyle(fontSize: 50.0)),
+                  TextSpan(text: 'hij', style: TextStyle(fontSize: 25.0)),
+                ],
+              ),
             ),
           ),
         ),
@@ -693,17 +696,20 @@ void main() {
 
   testWidgets('iOS selection handles scale with rich text (selection style 2)', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const CupertinoApp(
-        home: Center(
-          child: SelectableText.rich(
-            TextSpan(
-              children: <InlineSpan>[
-                TextSpan(text: 'abc ', style: TextStyle(fontSize: 100.0)),
-                TextSpan(text: 'def ', style: TextStyle(fontSize: 50.0)),
-                TextSpan(text: 'hij', style: TextStyle(fontSize: 25.0)),
-              ],
+      Theme(
+        data: ThemeData.light(),
+        child: const CupertinoApp(
+          home: Center(
+            child: SelectableText.rich(
+              TextSpan(
+                children: <InlineSpan>[
+                  TextSpan(text: 'abc ', style: TextStyle(fontSize: 100.0)),
+                  TextSpan(text: 'def ', style: TextStyle(fontSize: 50.0)),
+                  TextSpan(text: 'hij', style: TextStyle(fontSize: 25.0)),
+                ],
+              ),
+              selectionHeightStyle: ui.BoxHeightStyle.max,
             ),
-            selectionHeightStyle: ui.BoxHeightStyle.max,
           ),
         ),
       ),
@@ -777,16 +783,19 @@ void main() {
 
   testWidgets('iOS selection handles scale with rich text (grapheme clusters)', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const CupertinoApp(
-        home: Center(
-          child: SelectableText.rich(
-            TextSpan(
-              children: <InlineSpan>[
-                TextSpan(text: 'abc ', style: TextStyle(fontSize: 100.0)),
-                TextSpan(text: 'def ', style: TextStyle(fontSize: 50.0)),
-                TextSpan(text: '👨‍👩‍👦 ', style: TextStyle(fontSize: 35.0)),
-                TextSpan(text: 'hij', style: TextStyle(fontSize: 25.0)),
-              ],
+      Theme(
+        data: ThemeData.light(),
+        child: const CupertinoApp(
+          home: Center(
+            child: SelectableText.rich(
+              TextSpan(
+                children: <InlineSpan>[
+                  TextSpan(text: 'abc ', style: TextStyle(fontSize: 100.0)),
+                  TextSpan(text: 'def ', style: TextStyle(fontSize: 50.0)),
+                  TextSpan(text: '👨‍👩‍👦 ', style: TextStyle(fontSize: 35.0)),
+                  TextSpan(text: 'hij', style: TextStyle(fontSize: 25.0)),
+                ],
+              ),
             ),
           ),
         ),
@@ -858,14 +867,17 @@ void main() {
 
   testWidgets('iOS selection handles scaling falls back to preferredLineHeight when the current frame does not match the previous', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const CupertinoApp(
-        home: Center(
-          child: SelectableText.rich(
-            TextSpan(
-              children: <InlineSpan>[
-                TextSpan(text: 'abc', style: TextStyle(fontSize: 40.0)),
-                TextSpan(text: 'def', style: TextStyle(fontSize: 50.0)),
-              ],
+      Theme(
+        data: ThemeData.light(),
+        child: const CupertinoApp(
+          home: Center(
+            child: SelectableText.rich(
+              TextSpan(
+                children: <InlineSpan>[
+                  TextSpan(text: 'abc', style: TextStyle(fontSize: 40.0)),
+                  TextSpan(text: 'def', style: TextStyle(fontSize: 50.0)),
+                ],
+              ),
             ),
           ),
         ),
