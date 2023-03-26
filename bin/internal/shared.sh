@@ -140,6 +140,17 @@ function upgrade_flutter () (
     touch "$FLUTTER_ROOT/bin/cache/.dartignore"
     "$FLUTTER_ROOT/bin/internal/update_dart_sdk.sh"
 
+    local stamp="$(cat "$STAMP_PATH")"
+    local old_revision="${stamp%%:*}" old_flutter_tool_args="${stamp#*:}"
+    if [[ "$old_flutter_tool_args" == "$FLUTTER_TOOL_ARGS" ]] \
+        && git -C "$FLUTTER_ROOT" diff --quiet "$old_revision" "$revision" -- "$FLUTTER_TOOLS_DIR"; then
+      # The cache has the same FLUTTER_TOOL_ARGS as we would compile,
+      # and a revision with the same tool source as we would compile.
+      # So that's a cache hit; just update the stamp.
+      echo "$compilekey" > "$STAMP_PATH"
+      exit $?
+    fi
+
     >&2 echo Building flutter tool...
 
     # Prepare packages...
