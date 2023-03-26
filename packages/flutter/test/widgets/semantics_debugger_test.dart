@@ -457,14 +457,17 @@ void main() {
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.ltr,
-        child: SemanticsDebugger(
-          key: debugger,
-          child: Material(
-            child: Semantics(
-              container: true,
-              key: child,
-              label: 'text',
-              tooltip: 'text',
+        child: Theme(
+          data: ThemeData.light(),
+            child: SemanticsDebugger(
+            key: debugger,
+            child: Material(
+              child: Semantics(
+                container: true,
+                key: child,
+                label: 'text',
+                tooltip: 'text',
+              ),
             ),
           ),
         ),

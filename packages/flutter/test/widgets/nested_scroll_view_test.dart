@@ -42,74 +42,77 @@ Widget buildTest({
       textDirection: TextDirection.ltr,
       child: MediaQuery(
         data: const MediaQueryData(),
-        child: Scaffold(
-          drawerDragStartBehavior: DragStartBehavior.down,
-          body: DefaultTabController(
-            length: 4,
-            child: NestedScrollView(
-              key: key,
-              dragStartBehavior: DragStartBehavior.down,
-              controller: controller,
-              headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-                return <Widget>[
-                  SliverAppBar(
-                    title: Text(title),
-                    pinned: true,
-                    expandedHeight: expanded ? 200.0 : 0.0,
-                    forceElevated: innerBoxIsScrolled,
-                    bottom: const TabBar(
-                      tabs: <Tab>[
-                        Tab(text: 'AA'),
-                        Tab(text: 'BB'),
-                        Tab(text: 'CC'),
-                        Tab(text: 'DD'),
+        child: Theme(
+          data: ThemeData.light(),
+          child: Scaffold(
+            drawerDragStartBehavior: DragStartBehavior.down,
+            body: DefaultTabController(
+              length: 4,
+              child: NestedScrollView(
+                key: key,
+                dragStartBehavior: DragStartBehavior.down,
+                controller: controller,
+                headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                  return <Widget>[
+                    SliverAppBar(
+                      title: Text(title),
+                      pinned: true,
+                      expandedHeight: expanded ? 200.0 : 0.0,
+                      forceElevated: innerBoxIsScrolled,
+                      bottom: const TabBar(
+                        tabs: <Tab>[
+                          Tab(text: 'AA'),
+                          Tab(text: 'BB'),
+                          Tab(text: 'CC'),
+                          Tab(text: 'DD'),
+                        ],
+                      ),
+                    ),
+                  ];
+                },
+                body: TabBarView(
+                  children: <Widget>[
+                    ListView(
+                      children: const <Widget>[
+                        SizedBox(
+                          height: 300.0,
+                          child: Text('aaa1'),
+                        ),
+                        SizedBox(
+                          height: 200.0,
+                          child: Text('aaa2'),
+                        ),
+                        SizedBox(
+                          height: 100.0,
+                          child: Text('aaa3'),
+                        ),
+                        SizedBox(
+                          height: 50.0,
+                          child: Text('aaa4'),
+                        ),
                       ],
                     ),
-                  ),
-                ];
-              },
-              body: TabBarView(
-                children: <Widget>[
-                  ListView(
-                    children: const <Widget>[
-                      SizedBox(
-                        height: 300.0,
-                        child: Text('aaa1'),
-                      ),
-                      SizedBox(
-                        height: 200.0,
-                        child: Text('aaa2'),
-                      ),
-                      SizedBox(
-                        height: 100.0,
-                        child: Text('aaa3'),
-                      ),
-                      SizedBox(
-                        height: 50.0,
-                        child: Text('aaa4'),
-                      ),
-                    ],
-                  ),
-                  ListView(
-                    dragStartBehavior: DragStartBehavior.down,
-                    children: const <Widget>[
-                      SizedBox(
-                        height: 100.0,
-                        child: Text('bbb1'),
-                      ),
-                    ],
-                  ),
-                  const Center(child: Text('ccc1')),
-                  ListView(
-                    dragStartBehavior: DragStartBehavior.down,
-                    children: const <Widget>[
-                      SizedBox(
-                        height: 10000.0,
-                        child: Text('ddd1'),
-                      ),
-                    ],
-                  ),
-                ],
+                    ListView(
+                      dragStartBehavior: DragStartBehavior.down,
+                      children: const <Widget>[
+                        SizedBox(
+                          height: 100.0,
+                          child: Text('bbb1'),
+                        ),
+                      ],
+                    ),
+                    const Center(child: Text('ccc1')),
+                    ListView(
+                      dragStartBehavior: DragStartBehavior.down,
+                      children: const <Widget>[
+                        SizedBox(
+                          height: 10000.0,
+                          child: Text('ddd1'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

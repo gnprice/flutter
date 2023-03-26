@@ -26,40 +26,43 @@ void main() {
       textDirection: TextDirection.ltr,
       child: MediaQuery(
         data: const MediaQueryData(),
-        child: Stack(
-          key: stackKey,
-          children: <Widget>[
-            TextButton(
-              onPressed: onButtonPressed,
-              child: const Text('TapHere'),
-            ),
-            DraggableScrollableActuator(
-              child: DraggableScrollableSheet(
-                controller: controller,
-                maxChildSize: maxChildSize,
-                minChildSize: minChildSize,
-                initialChildSize: initialChildSize,
-                snap: snap,
-                snapSizes: snapSizes,
-                snapAnimationDuration: snapAnimationDuration,
-                builder: (BuildContext context, ScrollController scrollController) {
-                  return NotificationListener<ScrollNotification>(
-                    onNotification: onScrollNotification,
-                    child: ColoredBox(
-                      key: containerKey,
-                      color: const Color(0xFFABCDEF),
-                      child: ListView.builder(
-                        controller: ignoreController ? null : scrollController,
-                        itemExtent: itemExtent,
-                        itemCount: itemCount,
-                        itemBuilder: (BuildContext context, int index) => Text('Item $index'),
-                      ),
-                    ),
-                  );
-                },
+        child: Theme(
+          data: ThemeData.light(),
+          child: Stack(
+            key: stackKey,
+            children: <Widget>[
+              TextButton(
+                onPressed: onButtonPressed,
+                child: const Text('TapHere'),
               ),
-            ),
-          ],
+              DraggableScrollableActuator(
+                child: DraggableScrollableSheet(
+                  controller: controller,
+                  maxChildSize: maxChildSize,
+                  minChildSize: minChildSize,
+                  initialChildSize: initialChildSize,
+                  snap: snap,
+                  snapSizes: snapSizes,
+                  snapAnimationDuration: snapAnimationDuration,
+                  builder: (BuildContext context, ScrollController scrollController) {
+                    return NotificationListener<ScrollNotification>(
+                      onNotification: onScrollNotification,
+                      child: ColoredBox(
+                        key: containerKey,
+                        color: const Color(0xFFABCDEF),
+                        child: ListView.builder(
+                          controller: ignoreController ? null : scrollController,
+                          itemExtent: itemExtent,
+                          itemCount: itemCount,
+                          itemBuilder: (BuildContext context, int index) => Text('Item $index'),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
