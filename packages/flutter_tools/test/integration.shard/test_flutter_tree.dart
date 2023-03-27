@@ -39,7 +39,7 @@ String flutterToolsStampValue({required String revision, String toolArgs = ''}) 
 ///
 /// After all tests have run, [TestFlutterTree.dispose] should be called
 /// in order to delete the temporary tree.
-class TestFlutterTree {
+class TestFlutterTree extends FlutterTree {
   /// Take the shared global tree, resetting it to a pristine state.
   factory TestFlutterTree.take() {
     return (_instance ??= TestFlutterTree._create()).._reset();
@@ -51,7 +51,7 @@ class TestFlutterTree {
   /// that causes the entrypoint script to build the tool.  For example:
   /// ```dart
   ///   final TestFlutterTree tree = TestFlutterTree.take();
-  ///   processManager.runSyncSuccess([tree.binFlutter]);
+  ///   processManager.runSyncSuccess([tree.binFlutter.path]);
   /// ```
   ///
   /// This differs in that the tree is memoized and subsequently copied from
@@ -60,7 +60,7 @@ class TestFlutterTree {
     return TestFlutterTree.take().._warm();
   }
 
-  TestFlutterTree._(this.baseRevision, this.root);
+  TestFlutterTree._(this.baseRevision, super.root);
 
   factory TestFlutterTree._create() {
     final String baseRevision = processManager.runSyncSuccess(<String>[
@@ -78,7 +78,6 @@ class TestFlutterTree {
 
   static TestFlutterTree? _instance;
 
-  final Directory root;
   final String baseRevision;
   Directory? _warmTree;
 
@@ -112,7 +111,7 @@ class TestFlutterTree {
 
     assert(flutterToolsStampFile.readLikeShell() == null);
     final String stampValue = flutterToolsStampValue(revision: baseRevision);
-    processManager.runSyncSuccess(<String>[binFlutter]);
+    processManager.runSyncSuccess(<String>[binFlutter.path]);
     assert(flutterToolsStampFile.readLikeShell() == stampValue);
 
     _warmTree = fileSystem
@@ -132,11 +131,6 @@ class TestFlutterTree {
       // ignore
     }
   }
-
-  String get binDart => root.childDirectory('bin').childFile('dart').path;
-  String get binFlutter => root.childDirectory('bin').childFile('flutter').path;
-
-  Directory get toolsPackageDir => root.childDirectory('packages').childDirectory('flutter_tools');
 
   Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache');
   File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot');
