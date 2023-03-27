@@ -10,6 +10,11 @@ import '../src/common.dart';
 import '../src/process.dart';
 import 'test_flutter_tree.dart';
 
+final List<Matcher> upgradeMatcherList = [
+  startsWith('pub upgrade:'),
+  startsWith('generate-snapshot:'),
+];
+
 Future<void> main() async {
   tearDownAll(TestFlutterTree.dispose);
 
@@ -20,7 +25,8 @@ Future<void> main() async {
 
     final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
-    tree.ensureToolWithFakeDart();
+    final List<String> log = tree.ensureToolWithFakeDart();
+    expect(log, isNot(anyElement(anyOf(upgradeMatcherList))));
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
     expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
@@ -38,9 +44,8 @@ Future<void> main() async {
     final String stampValue = flutterToolsStampValue(revision: revision);
     final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
-    // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
-    tree.ensureToolWithFakeDart();
-    // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
+    final List<String> log = tree.ensureToolWithFakeDart();
+    expect(log, containsAllInOrder(upgradeMatcherList));
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
     expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
