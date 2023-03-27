@@ -46,7 +46,7 @@ extension FlutterTreeExtension on FlutterTree {
   }
 }
 
-void rsyncTreesSync(Directory source, Directory target) {
+void _rsyncTreesSync(Directory source, Directory target) {
   processManager.runSyncSuccess(<String>[
     'rsync', '-a', '--delete',
     source.path + Platform.pathSeparator,
@@ -131,7 +131,7 @@ class TestFlutterTree extends FlutterTree {
 
   void _warm() {
     if (_warmTree != null) {
-      rsyncTreesSync(_warmTree!, root);
+      _rsyncTreesSync(_warmTree!, root);
       return;
     }
 
@@ -142,7 +142,7 @@ class TestFlutterTree extends FlutterTree {
 
     _warmTree = fileSystem
       .systemTempDirectory.createTempSync('flutter_test_tree_warm.').absolute;
-    rsyncTreesSync(root, _warmTree!);
+    _rsyncTreesSync(root, _warmTree!);
   }
 
   void _dispose() {
