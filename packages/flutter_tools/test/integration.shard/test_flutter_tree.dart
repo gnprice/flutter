@@ -90,30 +90,30 @@ void _rsyncTreesSync(Directory source, Directory target) {
 /// To save resources, it reuses the Git object and pack files from
 /// the Flutter tree that these tests are found in.
 ///
-/// Successive test cases can reuse the tree by calling [TestFlutterTree.take],
+/// Successive test cases can reuse the tree by calling [TestFlutterTree.takeClean],
 /// which will reset it to its original state.
 ///
 /// After all tests have run, [TestFlutterTree.dispose] should be called
 /// in order to delete the temporary tree.
 class TestFlutterTree extends FlutterTree {
   /// Take the shared global tree, resetting it to a pristine state.
-  factory TestFlutterTree.take() {
-    return (_instance ??= TestFlutterTree._create()).._reset();
+  factory TestFlutterTree.takeClean() {
+    return TestFlutterTree._take().._reset();
   }
 
   /// Take the shared global tree, resetting it to a warm-cache state.
   ///
-  /// This is equivalent to [TestFlutterTree.take()] followed by a command
-  /// that causes the entrypoint script to build the tool.  For example:
-  /// ```dart
-  ///   final TestFlutterTree tree = TestFlutterTree.take();
-  ///   processManager.runSyncSuccess([tree.binFlutter.path]);
-  /// ```
-  ///
-  /// This differs in that the tree is memoized and subsequently copied from
-  /// the memoized version, which is much faster than compiling again.
+  /// This is equivalent to [TestFlutterTree.takeClean] followed by
+  /// [ensureToolSync], but differs in that the tree is memoized and
+  /// subsequently copied from the memoized version, which is much faster than
+  /// compiling again.
   factory TestFlutterTree.takeWarm() {
-    return TestFlutterTree.take().._warm();
+    return TestFlutterTree._take().._warm();
+  }
+
+  /// Take the shared global tree, in whatever state it currently is in.
+  factory TestFlutterTree._take() {
+    return _instance ??= TestFlutterTree._create();
   }
 
   TestFlutterTree._(this.baseRevision, super.root);
@@ -143,10 +143,9 @@ class TestFlutterTree extends FlutterTree {
       hostFlutterTree.root.childDirectory('.git').path,
       root.path,
     ]);
-    _reset();
   }
 
-  void _reset() {
+  void _reset({bool keepDartSdk = false}) {
     runSyncSuccess(<String>['git', 'checkout', '-B', 'main', baseRevision]);
     runSyncSuccess(<String>[
       'git', 'clean',
@@ -154,6 +153,8 @@ class TestFlutterTree extends FlutterTree {
       '--force',
       '-d', // directories too
       '-x', // ignored files too
+      if (keepDartSdk)
+        '--exclude=bin/cache/dart-sdk/', // dartSdkDir but relative to root
     ]);
   }
 
@@ -162,6 +163,8 @@ class TestFlutterTree extends FlutterTree {
       _rsyncTreesSync(_warmTree!, root);
       return;
     }
+
+    _reset();
 
     // Borrow the Dart SDK from the host tree.
     // This saves having to download it again.
