@@ -138,21 +138,7 @@ class TestFlutterTree {
   /// This differs in that the tree is memoized and subsequently copied from
   /// the memoized version, which is much faster than compiling again.
   factory TestFlutterTree.takeWarm() {
-    final TestFlutterTree tree = TestFlutterTree.take();
-    if (_warmTree != null) {
-      rsyncTreesSync(_warmTree!, tree.root);
-      return tree;
-    }
-
-    assert(tree.flutterToolsStampFile.readLikeShell() == null);
-    final String stampValue = flutterToolsStampValue(revision: tree.baseRevision);
-    processManager.runSyncSuccess(<String>[tree.binFlutter]);
-    assert(tree.flutterToolsStampFile.readLikeShell() == stampValue);
-
-    _warmTree = fileSystem
-      .systemTempDirectory.createTempSync('flutter_test_tree_warm.').absolute;
-    rsyncTreesSync(tree.root, _warmTree!);
-    return tree;
+    return TestFlutterTree.take().._warm();
   }
 
   TestFlutterTree._(this.baseRevision, this.root);
@@ -172,10 +158,10 @@ class TestFlutterTree {
   }
 
   static TestFlutterTree? _instance;
-  static Directory? _warmTree;
 
   final Directory root;
   final String baseRevision;
+  Directory? _warmTree;
 
   void _initialize() {
     processManager.runSyncSuccess(<String>[
@@ -199,9 +185,30 @@ class TestFlutterTree {
     ]);
   }
 
+  void _warm() {
+    if (_warmTree != null) {
+      rsyncTreesSync(_warmTree!, root);
+      return;
+    }
+
+    assert(flutterToolsStampFile.readLikeShell() == null);
+    final String stampValue = flutterToolsStampValue(revision: baseRevision);
+    processManager.runSyncSuccess(<String>[binFlutter]);
+    assert(flutterToolsStampFile.readLikeShell() == stampValue);
+
+    _warmTree = fileSystem
+        .systemTempDirectory.createTempSync('flutter_test_tree_warm.').absolute;
+    rsyncTreesSync(root, _warmTree!);
+  }
+
   void _dispose() {
     try {
       root.deleteSync(recursive: true);
+    } on FileSystemException {
+      // ignore
+    }
+    try {
+      _warmTree?.deleteSync(recursive: true);
     } on FileSystemException {
       // ignore
     }
