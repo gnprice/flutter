@@ -212,7 +212,7 @@ class TestFlutterTree {
 
   Directory get toolsPackageDir => root.childDirectory('packages').childDirectory('flutter_tools');
 
-  String headRevision() => runSyncSuccess(['git', 'rev-parse', 'HEAD']).shellOutput;
+  String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
 
   ProcessResult runSyncSuccess(
     List<String> command, {
@@ -256,7 +256,7 @@ Future<void> main() async {
 
     final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
-    processManager.runSyncSuccess([tree.binFlutter]);
+    processManager.runSyncSuccess(<String>[tree.binFlutter]);
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
     expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
@@ -268,14 +268,14 @@ Future<void> main() async {
     tree.toolsPackageDir.childFile('pubspec.yaml').writeAsStringSync(
       '\n', mode: FileMode.append,
     );
-    tree.runSyncSuccess(['git', 'commit', '-am', 'touch pubspec.yaml']);
+    tree.runSyncSuccess(<String>['git', 'commit', '-am', 'touch pubspec.yaml']);
 
     final String revision = tree.headRevision();
     final String stampValue = flutterToolsStampValue(revision: revision);
     final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
     // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
-    processManager.runSyncSuccess([tree.binFlutter]);
+    processManager.runSyncSuccess(<String>[tree.binFlutter]);
     // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
