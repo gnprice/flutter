@@ -20,7 +20,7 @@ Future<void> main() async {
 
     final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
-    processManager.runSyncSuccess(<String>[tree.binFlutter.path]);
+    tree.ensureToolSync();
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
     expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
@@ -39,14 +39,13 @@ Future<void> main() async {
     final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
     // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
-    processManager.runSyncSuccess(<String>[tree.binFlutter.path]);
+    tree.ensureToolSync();
     // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
     expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
   });
 
-  // TODO borrow bin/cache/dart-sdk/ from main tree, to save downloading
   // TODO copy uncommitted changes from main tree
 
   // TODO test commits to bin/flutter_tools.dart and to lib/

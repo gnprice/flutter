@@ -12,12 +12,19 @@ class FlutterTree {
 
   final Directory root;
 
-  Directory get binDir => root.childDirectory('bin');
-  File get binDart => binDir.childFile('dart');
-  File get binFlutter => binDir.childFile('flutter');
+  // When adding more file and subdirectory getters,
+  // include their full relative paths as comments.
+  // This helps make them discoverable as references to these files/directories.
 
-  Directory get packagesDir => root.childDirectory('packages');
-  Directory get toolsPackageDir => packagesDir.childDirectory('flutter_tools');
+  Directory get binDir => root.childDirectory('bin'); // bin/
+  File get binDart => binDir.childFile('dart'); // bin/dart
+  File get binFlutter => binDir.childFile('flutter'); // bin/flutter
+
+  Directory get binInternalDir => binDir.childDirectory('internal'); // bin/internal/
+  File get engineVersionFile => binInternalDir.childFile('engine.version'); // bin/internal/engine.version
+
+  Directory get packagesDir => root.childDirectory('packages'); // packages/
+  Directory get toolsPackageDir => packagesDir.childDirectory('flutter_tools'); // packages/flutter_tools/
 }
 
 final FlutterTree hostFlutterTree = FlutterTree(

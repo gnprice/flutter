@@ -29,6 +29,23 @@ extension FlutterTreeExtension on FlutterTree {
 
   String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
 
+  /// Run a trivial command with the tree's `bin/dart`, to ensure the cache
+  /// is up to date.
+  ///
+  /// This happens to update all the same caches as [ensureToolSync],
+  /// but in principle in the future it might not.
+  void ensureDartSync() {
+    // `dart --version` is faster than simply `dart`
+    runSyncSuccess(<String>[binDart.path, '--version']);
+  }
+
+  /// Run a trivial command with the tree's `bin/flutter`, to ensure the cache
+  /// is up to date.
+  void ensureToolSync() {
+    // plain `flutter` is faster than `flutter --version`
+    runSyncSuccess(<String>[binFlutter.path]);
+  }
+
   ProcessResult runSyncSuccess(
     List<String> command, {
     Map<String, String>? environment,
@@ -48,6 +65,17 @@ extension FlutterTreeExtension on FlutterTree {
   }
 }
 
+/// Use `rsync` to copy one directory tree to another, exactly,
+/// deleting stray files.
+///
+/// For each file or directory found under [source], there will be a
+/// corresponding entity at the same relative path under [target],
+/// with the same contents and same last-modified time and other metadata.
+/// Any entities under [target] that do not correspond to an entity under
+/// [source] will be deleted.
+///
+/// This is equivalent to the shell command
+/// `rsync -a --delete "${source}/" "${target}/"`.
 void _rsyncTreesSync(Directory source, Directory target) {
   processManager.runSyncSuccess(<String>[
     'rsync', '-a', '--delete',
@@ -135,9 +163,17 @@ class TestFlutterTree extends FlutterTree {
       return;
     }
 
+    // Borrow the Dart SDK from the host tree.
+    // This saves having to download it again.
+    hostFlutterTree.ensureDartSync();
+    dartSdkDir.createSync(recursive: true);
+    _rsyncTreesSync(hostFlutterTree.dartSdkDir, dartSdkDir);
+    hostFlutterTree.engineStampFile.copySync(engineStampFile.path);
+
+    // Warm the rest of the cache directly in the test tree.
     assert(flutterToolsStampFile.readLikeShell() == null);
     final String stampValue = flutterToolsStampValue(revision: baseRevision);
-    processManager.runSyncSuccess(<String>[binFlutter.path]);
+    ensureToolSync();
     assert(flutterToolsStampFile.readLikeShell() == stampValue);
 
     _warmTree = fileSystem
