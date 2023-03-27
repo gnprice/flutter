@@ -14,25 +14,26 @@ final List<Matcher> upgradeMatcherList = [
   startsWith('generate-snapshot:'),
 ];
 
+final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
+final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
+
+void editFile(TestFlutterTree tree, File file) {
+  file.writeAsStringSync('\n', mode: FileMode.append);
+  tree.runSyncSuccess(<String>['git', 'commit', '-am', 'touch ${file.basename}']);
+}
+
 Future<void> main() async {
   tearDownAll(TestFlutterTree.dispose);
 
   test('when nothing changes, cache is hit', () async {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
-    final List<String> log = tree.ensureToolWithFakeDart();
-    expect(log, isNot(anyElement(anyOf(upgradeMatcherList))));
+    expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
 
   test('a commit on pubspec.yaml invalidates cache', () async {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
-
-    tree.toolsPackageDir.childFile('pubspec.yaml').writeAsStringSync(
-      '\n', mode: FileMode.append,
-    );
-    tree.runSyncSuccess(<String>['git', 'commit', '-am', 'touch pubspec.yaml']);
-
-    final List<String> log = tree.ensureToolWithFakeDart();
-    expect(log, containsAllInOrder(upgradeMatcherList));
+    editFile(tree, tree.toolsPackageDir.childFile('pubspec.yaml'));
+    expect(tree.ensureToolWithFakeDart(), isCacheMiss);
   });
 
   // TODO copy uncommitted changes from main tree
