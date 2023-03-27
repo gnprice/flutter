@@ -24,6 +24,8 @@ extension FlutterTreeExtension on FlutterTree {
   Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache');
   File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot');
   File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp');
+  Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk');
+  File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp');
 
   String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
 
@@ -89,9 +91,7 @@ class TestFlutterTree extends FlutterTree {
   TestFlutterTree._(this.baseRevision, super.root);
 
   factory TestFlutterTree._create() {
-    final String baseRevision = processManager.runSyncSuccess(<String>[
-      'git', '-C', hostFlutterTree.root.path, 'rev-parse', 'HEAD',
-    ]).shellOutput;
+    final String baseRevision = hostFlutterTree.headRevision();
     final Directory root = fileSystem
       .systemTempDirectory.createTempSync('flutter_test_tree.').absolute;
     return TestFlutterTree._(baseRevision, root).._initialize();
