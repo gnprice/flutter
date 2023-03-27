@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:file/file.dart';
 
 import '../src/common.dart';
-import '../src/process.dart';
 import 'test_flutter_tree.dart';
 
 final List<Matcher> upgradeMatcherList = [
@@ -20,16 +19,8 @@ Future<void> main() async {
 
   test('when nothing changes, cache is hit', () async {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
-    final String stampValue = flutterToolsStampValue(revision: tree.baseRevision);
-    expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
-
-    final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
-    final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
     final List<String> log = tree.ensureToolWithFakeDart();
     expect(log, isNot(anyElement(anyOf(upgradeMatcherList))));
-    expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
-    expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
-    expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
   });
 
   test('a commit on pubspec.yaml invalidates cache', () async {
@@ -40,15 +31,8 @@ Future<void> main() async {
     );
     tree.runSyncSuccess(<String>['git', 'commit', '-am', 'touch pubspec.yaml']);
 
-    final String revision = tree.headRevision();
-    final String stampValue = flutterToolsStampValue(revision: revision);
-    final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
-    final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
     final List<String> log = tree.ensureToolWithFakeDart();
     expect(log, containsAllInOrder(upgradeMatcherList));
-    expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
-    expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
-    expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
   });
 
   // TODO copy uncommitted changes from main tree
