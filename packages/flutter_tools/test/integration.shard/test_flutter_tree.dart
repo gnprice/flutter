@@ -15,17 +15,43 @@ import '../src/process.dart';
 const FileSystem fileSystem = LocalFileSystem();
 const ProcessManager processManager = LocalProcessManager();
 
+/// The value the entrypoint writes into `flutterToolsStampFile`.
+String flutterToolsStampValue({required String revision, String toolArgs = ''}) {
+  return '$revision:$toolArgs';
+}
+
+extension FlutterTreeExtension on FlutterTree {
+  Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache');
+  File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot');
+  File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp');
+
+  String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
+
+  ProcessResult runSyncSuccess(
+    List<String> command, {
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    // no runInShell; keep that always false
+    Encoding? stdoutEncoding = systemEncoding,
+    Encoding? stderrEncoding = systemEncoding,
+  }) {
+    return processManager.runSyncSuccess(
+      command,
+      workingDirectory: root.path,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      stdoutEncoding: stdoutEncoding,
+      stderrEncoding: stderrEncoding,
+    );
+  }
+}
+
 void rsyncTreesSync(Directory source, Directory target) {
   processManager.runSyncSuccess(<String>[
     'rsync', '-a', '--delete',
     source.path + Platform.pathSeparator,
     target.path + Platform.pathSeparator,
   ]);
-}
-
-/// The value the entrypoint writes into `flutterToolsStampFile`.
-String flutterToolsStampValue({required String revision, String toolArgs = ''}) {
-  return '$revision:$toolArgs';
 }
 
 /// A temporary copy of the Flutter tree, to be freely mutated for testing.
@@ -130,29 +156,5 @@ class TestFlutterTree extends FlutterTree {
     } on FileSystemException {
       // ignore
     }
-  }
-
-  Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache');
-  File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot');
-  File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp');
-
-  String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
-
-  ProcessResult runSyncSuccess(
-    List<String> command, {
-    Map<String, String>? environment,
-    bool includeParentEnvironment = true,
-    // no runInShell; keep that always false
-    Encoding? stdoutEncoding = systemEncoding,
-    Encoding? stderrEncoding = systemEncoding,
-  }) {
-    return processManager.runSyncSuccess(
-      command,
-      workingDirectory: root.path,
-      environment: environment,
-      includeParentEnvironment: includeParentEnvironment,
-      stdoutEncoding: stdoutEncoding,
-      stderrEncoding: stderrEncoding,
-    );
   }
 }
