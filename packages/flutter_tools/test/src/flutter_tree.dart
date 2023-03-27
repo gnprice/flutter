@@ -24,6 +24,7 @@ class FlutterTree {
   File get engineVersionFile => binInternalDir.childFile('engine.version'); // bin/internal/engine.version
 
   Directory get packagesDir => root.childDirectory('packages'); // packages/
+  Directory get frameworkDir => packagesDir.childDirectory('flutter'); // packages/flutter/
   Directory get toolsPackageDir => packagesDir.childDirectory('flutter_tools'); // packages/flutter_tools/
 }
 
