@@ -176,7 +176,7 @@ class TestFlutterTree extends FlutterTree {
     // Warm the rest of the cache directly in the test tree.
     assert(flutterToolsStampFile.readLikeShell() == null);
     final String stampValue = flutterToolsStampValue(revision: baseRevision);
-    ensureToolSync();
+    ensureToolWithFakeDart();
     assert(flutterToolsStampFile.readLikeShell() == stampValue);
 
     _warmTree = fileSystem
@@ -195,5 +195,50 @@ class TestFlutterTree extends FlutterTree {
     } on FileSystemException {
       // ignore
     }
+  }
+
+  File get fakeDartLog => binCacheDir.childFile('fake-dart.log'); // bin/cache/fake-dart.log
+  File get dartBinary => dartSdkDir.childDirectory('bin').childFile('dart'); // bin/cache/dart-sdk/bin/dart
+  File get dartBinaryOrig => dartSdkDir.childDirectory('bin').childFile('dart.orig'); // bin/cache/dart-sdk/bin/dart.orig
+
+  void ensureToolWithFakeDart() {
+    fakeDartLog.writeAsStringSync('');
+    dartBinary.renameSync(dartBinaryOrig.path);
+    _writeFakeDart();
+    ensureToolSync();
+    dartBinaryOrig.renameSync(dartBinary.path);
+    // TODO perhaps inspect the data in [fakeDartLog]
+  }
+
+  void _writeFakeDart() {
+    dartBinary.writeAsStringSync('''
+#!/usr/bin/env bash
+
+# Log the command.
+echo dart "\$*" >>${shellEscapeArgument(fakeDartLog.path)}
+
+case "\$*" in
+  *" --disable-dart-dev "*" --snapshot-kind=app-jit "*)
+    # This is the command to generate the snapshot,
+    # in the upgrade_flutter function in bin/internal/shared.sh .
+    # Fake generating the snapshot, by copying from the host tree.
+    cp ${shellEscapeArgument(hostFlutterTree.snapshotFile.path)} \\
+      ${shellEscapeArgument(snapshotFile.path)}
+    ;;
+
+  "pub upgrade "*)
+    # This is a `dart pub upgrade` command, as in pub_upgrade_with_retry .
+    # Just update the last-modified time on the pubspec.lock .
+    touch pubspec.lock
+    ;;
+
+  *" --disable-dart-dev "*" "${shellEscapeArgument(snapshotFile.path)} \\
+  | *" --disable-dart-dev "*" "${shellEscapeArgument(snapshotFile.path)}" "*)
+    # This looks like the "flutter" case at the end of shared::execute.
+    # Do nothing.
+    ;;
+esac
+''');
+    processManager.runSyncSuccess(<String>['chmod', '+x', '--', dartBinary.path]); // https://github.com/dart-lang/sdk/issues/15078
   }
 }

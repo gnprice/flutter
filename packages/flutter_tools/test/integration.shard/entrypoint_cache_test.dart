@@ -20,7 +20,7 @@ Future<void> main() async {
 
     final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
-    tree.ensureToolSync();
+    tree.ensureToolWithFakeDart();
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
     expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
@@ -39,7 +39,7 @@ Future<void> main() async {
     final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
     final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
     // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
-    tree.ensureToolSync();
+    tree.ensureToolWithFakeDart();
     // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
     expect(tree.flutterToolsStampFile.readLikeShell(), stampValue);
     expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
