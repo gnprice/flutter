@@ -29,6 +29,25 @@ extension FlutterTreeExtension on FlutterTree {
 
   String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
 
+  /// List the files where the worktree differs from the HEAD revision.
+  ///
+  /// By default this includes files that have been added, deleted,
+  /// or in any way modified.  If `diffFilter` is provided, it will be
+  /// passed to `git diff --diff-filter=…` to filter the files
+  /// by type of change.
+  ///
+  /// Each file is represented as a path relative to [root].
+  List<String> gitModifiedFiles({String? diffFilter}) {
+    final List<String> command = <String>[
+      'git', 'diff',
+      '--name-only', '-z',
+      if (diffFilter != null)
+        '--diff-filter=$diffFilter',
+      'HEAD',
+    ];
+    return (runSyncSuccess(command).stdout as String).split('\x00')..removeLast();
+  }
+
   /// Run a trivial command with the tree's `bin/dart`, to ensure the cache
   /// is up to date.
   ///
@@ -116,13 +135,13 @@ class TestFlutterTree extends FlutterTree {
     return _instance ??= TestFlutterTree._create();
   }
 
-  TestFlutterTree._(this.baseRevision, super.root);
+  TestFlutterTree._(this.origRevision, super.root);
 
   factory TestFlutterTree._create() {
-    final String baseRevision = hostFlutterTree.headRevision();
+    final String origRevision = hostFlutterTree.headRevision();
     final Directory root = fileSystem
       .systemTempDirectory.createTempSync('flutter_test_tree.').absolute;
-    return TestFlutterTree._(baseRevision, root).._initialize();
+    return TestFlutterTree._(origRevision, root).._initialize();
   }
 
   static void dispose() {
@@ -132,7 +151,8 @@ class TestFlutterTree extends FlutterTree {
 
   static TestFlutterTree? _instance;
 
-  final String baseRevision;
+  final String origRevision;
+  late final String baseRevision;
   Directory? _warmTree;
 
   void _initialize() {
@@ -143,6 +163,28 @@ class TestFlutterTree extends FlutterTree {
       hostFlutterTree.root.childDirectory('.git').path,
       root.path,
     ]);
+    runSyncSuccess(<String>['git', 'checkout', '-B', 'main', origRevision]);
+
+    // Sync uncommitted changes from [hostFlutterTree].
+    bool hadChanges = false;
+    final List<String> nonDeleteChanges = hostFlutterTree.gitModifiedFiles(diffFilter: 'd');
+    if (nonDeleteChanges.isNotEmpty) {
+      hostFlutterTree.runSyncSuccess(<String>[
+        'rsync', '-a', '--relative',
+        ...nonDeleteChanges,
+        root.path + Platform.pathSeparator,
+      ]);
+      hadChanges = true;
+    }
+    for (final String file in hostFlutterTree.gitModifiedFiles(diffFilter: 'D')) {
+      fileSystem.file(fileSystem.path.join(root.path, file)).deleteSync();
+      hadChanges = true;
+    }
+    if (hadChanges) {
+      runSyncSuccess(<String>[
+        'git', 'commit', '-am', 'uncommitted changes from host tree',
+      ]);
+    }
   }
 
   void _reset({bool keepDartSdk = false}) {
