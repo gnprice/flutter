@@ -188,6 +188,9 @@ class TestFlutterTree extends FlutterTree {
       runSyncSuccess(<String>[
         'git', 'commit', '-am', 'uncommitted changes from host tree',
       ]);
+      baseRevision = headRevision();
+    } else {
+      baseRevision = origRevision;
     }
   }
 
