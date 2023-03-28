@@ -40,6 +40,7 @@ extension FlutterTreeExtension on FlutterTree {
   List<String> gitModifiedFiles({String? diffFilter}) {
     final List<String> command = <String>[
       'git', 'diff',
+      '--no-renames',
       '--name-only', '-z',
       if (diffFilter != null)
         '--diff-filter=$diffFilter',
