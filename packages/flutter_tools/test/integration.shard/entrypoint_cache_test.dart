@@ -77,8 +77,6 @@ Future<void> main() async {
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
 
-  // TODO copy uncommitted changes from main tree
-
   // TODO test deleting file, or adding new one, in both hit and miss
   // TODO test commits to examples
 }
