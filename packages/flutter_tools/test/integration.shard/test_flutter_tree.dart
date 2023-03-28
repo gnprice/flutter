@@ -170,21 +170,25 @@ class TestFlutterTree extends FlutterTree {
     runSyncSuccess(<String>['git', 'checkout', '-B', 'main', origRevision]);
 
     // Sync uncommitted changes from [hostFlutterTree].
-    bool hadChanges = false;
-    final List<String> nonDeleteChanges = hostFlutterTree.gitModifiedFiles(diffFilter: 'AMU');
-    if (nonDeleteChanges.isNotEmpty) {
+    final List<String> filesAdded = hostFlutterTree.gitModifiedFiles(diffFilter: 'A');
+    final List<String> filesEdited = hostFlutterTree.gitModifiedFiles(diffFilter: 'MUT');
+    final List<String> filesDeleted = hostFlutterTree.gitModifiedFiles(diffFilter: 'D');
+    if (filesAdded.isNotEmpty || filesEdited.isNotEmpty) {
       hostFlutterTree.runSyncSuccess(<String>[
         'rsync', '-a', '--relative',
-        ...nonDeleteChanges,
+        ...filesAdded, ...filesEdited,
         root.path + Platform.pathSeparator,
       ]);
-      hadChanges = true;
+      if (filesAdded.isNotEmpty) {
+        runSyncSuccess(<String>[
+          'git', 'add', '--', ...filesAdded,
+        ]);
+      }
     }
-    for (final String file in hostFlutterTree.gitModifiedFiles(diffFilter: 'D')) {
+    for (final String file in filesDeleted) {
       fileSystem.file(fileSystem.path.join(root.path, file)).deleteSync();
-      hadChanges = true;
     }
-    if (hadChanges) {
+    if (filesAdded.isNotEmpty || filesEdited.isNotEmpty || filesDeleted.isNotEmpty) {
       runSyncSuccess(<String>[
         'git', 'commit', '-am', 'uncommitted changes from host tree',
       ]);
