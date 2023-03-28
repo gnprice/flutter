@@ -31,16 +31,19 @@ extension FlutterTreeExtension on FlutterTree {
 
   /// List the files where the worktree differs from the HEAD revision.
   ///
+  /// Each file is represented as a path relative to [root].
+  ///
   /// By default this includes files that have been added, deleted,
   /// or in any way modified.  If `diffFilter` is provided, it will be
   /// passed to `git diff --diff-filter=…` to filter the files
   /// by type of change.
   ///
-  /// Each file is represented as a path relative to [root].
+  /// No rename detection is performed; if a file was renamed, it will appear
+  /// as a deletion and an addition (as further filtered by `diffFilter`).
   List<String> gitModifiedFiles({String? diffFilter}) {
     final List<String> command = <String>[
       'git', 'diff',
-      '--no-renames',
+      '--no-renames', // disables finding renames and finding copies, too
       '--name-only', '-z',
       if (diffFilter != null)
         '--diff-filter=$diffFilter',
@@ -168,7 +171,7 @@ class TestFlutterTree extends FlutterTree {
 
     // Sync uncommitted changes from [hostFlutterTree].
     bool hadChanges = false;
-    final List<String> nonDeleteChanges = hostFlutterTree.gitModifiedFiles(diffFilter: 'd');
+    final List<String> nonDeleteChanges = hostFlutterTree.gitModifiedFiles(diffFilter: 'AMU');
     if (nonDeleteChanges.isNotEmpty) {
       hostFlutterTree.runSyncSuccess(<String>[
         'rsync', '-a', '--relative',
