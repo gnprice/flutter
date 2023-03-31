@@ -505,6 +505,9 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
   /// then flushes microtasks.
   ///
   /// Set to null to use the default surface size.
+  ///
+  /// The surface size will be automatically reset to the default
+  /// before each test is run.
   Future<void> setSurfaceSize(Size? size) {
     return TestAsyncUtils.guard<void>(() async {
       assert(inTest);
@@ -957,15 +960,20 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
 
   Future<void> _runTestBody(Future<void> Function() testBody, VoidCallback invariantTester) async {
     assert(inTest);
-    // So that we can assert that it remains the same after the test finishes.
-    _beforeTestCheckIntrinsicSizes = debugCheckIntrinsicSizes;
 
+    // Reset some kinds of state.  (Some others get reset by [reset], called
+    // by the `testBody` passed by [testWidgets].)
+    await setSurfaceSize(null);
     runApp(Container(key: UniqueKey(), child: _preTestMessage)); // Reset the tree to a known state.
     await pump();
     // Pretend that the first frame produced in the test body is the first frame
     // sent to the engine.
     resetFirstFrameSent();
 
+    // Record some other kinds of state, so that we can assert that they
+    // remain the same after the test finishes.
+    // Better would be to reset these too: https://github.com/flutter/flutter/issues/121917
+    _beforeTestCheckIntrinsicSizes = debugCheckIntrinsicSizes;
     final bool autoUpdateGoldensBeforeTest = autoUpdateGoldenFiles && !isBrowser;
     final TestExceptionReporter reportTestExceptionBeforeTest = reportTestException;
     final ErrorWidgetBuilder errorWidgetBuilderBeforeTest = ErrorWidget.builder;
@@ -979,6 +987,7 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
       // We only try to clean up and verify invariants if we didn't already
       // fail. If we got an exception already, then we instead leave everything
       // alone so that we don't cause more spurious errors.
+      await setSurfaceSize(null);
       runApp(Container(key: UniqueKey(), child: _postTestMessage)); // Unmount any remaining widgets.
       await pump();
       if (registerTestTextInput) {

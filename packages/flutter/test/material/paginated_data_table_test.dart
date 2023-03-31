@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(gspencergoog): Remove this tag once this test's state leaks/test
-// dependencies have been fixed.
-// https://github.com/flutter/flutter/issues/85160
-// Fails with "flutter test --test-randomize-ordering-seed=1000"
-@Tags(<String>['no-shuffle'])
-library;
-
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -324,8 +317,6 @@ void main() {
     expect(find.byIcon(Icons.add), findsNothing);
 
     expect(() => buildTable(actions: actions), throwsAssertionError);
-
-    await binding.setSurfaceSize(null);
   });
 
   testWidgets('PaginatedDataTable with large text', (WidgetTester tester) async {
@@ -502,8 +493,6 @@ void main() {
     const double width = 400;
     const double height = 400;
 
-    final Size originalSize = binding.renderView.size;
-
     // Ensure the containing Card is small enough that we don't expand too
     // much, resulting in our custom margin being ignored.
     await binding.setSurfaceSize(const Size(width, height));
@@ -651,9 +640,6 @@ void main() {
       tester.getRect(padding).right - tester.getRect(cellContent).right,
       customHorizontalMargin,
     );
-
-    // Reset the surface size.
-    await binding.setSurfaceSize(originalSize);
   });
 
   testWidgets('PaginatedDataTable custom horizontal padding - no checkbox', (WidgetTester tester) async {
@@ -794,8 +780,6 @@ void main() {
     // reduced by 4 * 2; the left and right margins.
     const double cardMargin = 8;
 
-    final Size originalSize = binding.renderView.size;
-
     Widget buildWidget() => MaterialApp(
       home: PaginatedDataTable(
         header: const Text('Test table'),
@@ -838,9 +822,6 @@ void main() {
 
     // Double check to ensure we actually resized the surface properly.
     expect(cardWidth, moreOrLessEquals(expandedWidth));
-
-    // Reset the surface size.
-    await binding.setSurfaceSize(originalSize);
   });
 
   testWidgets('PaginatedDataTable with optional column checkbox', (WidgetTester tester) async {
@@ -867,7 +848,6 @@ void main() {
   });
 
   testWidgets('Table should not use decoration from DataTableTheme', (WidgetTester tester) async {
-    final Size originalSize = binding.renderView.size;
     await binding.setSurfaceSize(const Size(800, 800));
 
     Widget buildTable() {
@@ -892,9 +872,6 @@ void main() {
     await tester.pumpWidget(buildTable());
     final Finder tableContainerFinder = find.ancestor(of: find.byType(Table), matching: find.byType(Container)).first;
     expect(tester.widget<Container>(tableContainerFinder).decoration, const BoxDecoration());
-
-    // Reset the surface size.
-    await binding.setSurfaceSize(originalSize);
   });
 
   testWidgets('PaginatedDataTable custom checkboxHorizontalMargin properly applied', (WidgetTester tester) async {
@@ -903,8 +880,6 @@ void main() {
 
     const double width = 400;
     const double height = 400;
-
-    final Size originalSize = binding.renderView.size;
 
     // Ensure the containing Card is small enough that we don't expand too
     // much, resulting in our custom margin being ignored.
@@ -958,9 +933,6 @@ void main() {
       tester.getRect(cellContent).left - tester.getRect(padding).left,
       customHorizontalMargin,
     );
-
-    // Reset the surface size.
-    await binding.setSurfaceSize(originalSize);
   });
 
   testWidgets('Items selected text uses secondary color', (WidgetTester tester) async {
@@ -998,8 +970,6 @@ void main() {
     // The color of the selected text item should be the colorScheme.secondary
     final TextStyle selectedTextStyle = tester.renderObject<RenderParagraph>(find.text('1 item selected')).text.style!;
     expect(selectedTextStyle.color, equals(selectedTextColor));
-
-    await binding.setSurfaceSize(null);
   });
 
   testWidgets('PaginatedDataTable arrowHeadColor set properly', (WidgetTester tester) async {

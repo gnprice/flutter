@@ -22,6 +22,16 @@ import 'package:test_api/test_api.dart' as test_package;
 void main() {
   final AutomatedTestWidgetsFlutterBinding binding = AutomatedTestWidgetsFlutterBinding();
 
+  /// Run the callback with [TestWidgetsFlutterBinding.inTest] true, but
+  /// don't clean up invariants afterward.
+  // Arguably this is exploiting a glitch in the [TestWidgetsFlutterBinding] API,
+  // but it sure is handy for these tests.
+  Future<void> runInTestWithoutCleanup(Future<void> Function() callback) async {
+    await binding.runTest(() async {}, () {});
+    await callback();
+    binding.postTest();
+  }
+
   group(TestViewConfiguration, () {
     test('is initialized with top-level window if one is not provided', () {
       // The code below will throw without the default.
@@ -36,28 +46,63 @@ void main() {
     });
   });
 
-  // The next three tests must run in order -- first using `test`, then `testWidgets`, then `test` again.
+  group('testTextInput', () {
+    // These three tests must run in order -- first using `test`, then `testWidgets`, then `test` again.
+    int order = 0;
 
-  int order = 0;
+    test('Initializes httpOverrides and testTextInput', () async {
+      assert(order == 0);
+      expect(binding.testTextInput, isNotNull);
+      expect(binding.testTextInput.isRegistered, isFalse);
+      expect(HttpOverrides.current, isNotNull);
+      order += 1;
+    });
 
-  test('Initializes httpOverrides and testTextInput', () async {
-    assert(order == 0);
-    expect(binding.testTextInput, isNotNull);
-    expect(binding.testTextInput.isRegistered, isFalse);
-    expect(HttpOverrides.current, isNotNull);
-    order += 1;
+    testWidgets('Registers testTextInput', (WidgetTester tester) async {
+      assert(order == 1);
+      expect(tester.testTextInput.isRegistered, isTrue);
+      order += 1;
+    });
+
+    test('Unregisters testTextInput', () async {
+      assert(order == 2);
+      expect(binding.testTextInput.isRegistered, isFalse);
+      order += 1;
+    });
   });
 
-  testWidgets('Registers testTextInput', (WidgetTester tester) async {
-    assert(order == 1);
-    expect(tester.testTextInput.isRegistered, isTrue);
-    order += 1;
-  });
+  group('setSurfaceSize reset', () {
+    int order = 0;
+    late final Size defaultSurfaceSize;
+    const Size alternateSize = Size(400, 300);
 
-  test('Unregisters testTextInput', () async {
-    assert(order == 2);
-    expect(binding.testTextInput.isRegistered, isFalse);
-    order += 1;
+    test('call setSurfaceSize with a non-default value', () async {
+      assert(order == 0);
+      defaultSurfaceSize = binding.renderView.size;
+      assert(defaultSurfaceSize != alternateSize);
+      runInTestWithoutCleanup(() async {
+        // Set the surface size, without it getting reset at the end of the test,
+        // so the next test can confirm it gets reset at the start of that one.
+        // In a normal test suite, this is what happens if a test fails after
+        // setting the surface size.  Using [runInTestWithoutCleanup] lets us
+        // simulate that effect without having a failing test.
+        await binding.setSurfaceSize(alternateSize);
+      });
+      order += 1;
+    });
+
+    testWidgets('setSurfaceSize reset to default at start of widget test', (WidgetTester tester) async {
+      assert(order == 1);
+      expect(binding.renderView.size, defaultSurfaceSize);
+      await binding.setSurfaceSize(alternateSize);
+      order += 1;
+    });
+
+    test('setSurfaceSize reset to default at end of widget test', () {
+      assert(order == 2);
+      expect(binding.renderView.size, defaultSurfaceSize);
+      order += 1;
+    });
   });
 
   group('elapseBlocking', () {
