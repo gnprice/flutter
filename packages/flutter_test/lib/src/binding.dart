@@ -510,13 +510,17 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
   /// before each test is run.
   Future<void> setSurfaceSize(Size? size) {
     return TestAsyncUtils.guard<void>(() async {
-      assert(inTest);
-      if (_surfaceSize == size) {
-        return;
-      }
-      _surfaceSize = size;
-      handleMetricsChanged();
+      _setSurfaceSize(size);
     });
+  }
+
+  void _setSurfaceSize(Size? size) {
+    assert(inTest);
+    if (_surfaceSize == size) {
+      return;
+    }
+    _surfaceSize = size;
+    handleMetricsChanged();
   }
 
   @override
@@ -963,7 +967,7 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
 
     // Reset some kinds of state.  (Some others get reset by [reset], called
     // by the `testBody` passed by [testWidgets].)
-    await setSurfaceSize(null);
+    _setSurfaceSize(null);
     runApp(Container(key: UniqueKey(), child: _preTestMessage)); // Reset the tree to a known state.
     await pump();
     // Pretend that the first frame produced in the test body is the first frame
@@ -987,7 +991,7 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
       // We only try to clean up and verify invariants if we didn't already
       // fail. If we got an exception already, then we instead leave everything
       // alone so that we don't cause more spurious errors.
-      await setSurfaceSize(null);
+      _setSurfaceSize(null);
       runApp(Container(key: UniqueKey(), child: _postTestMessage)); // Unmount any remaining widgets.
       await pump();
       if (registerTestTextInput) {
