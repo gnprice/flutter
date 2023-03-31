@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
 import 'color_scheme.dart';
@@ -215,8 +214,6 @@ class Scrollbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print(debugDefaultTargetPlatformOverride);
-    // print(Theme.of(context).platform);
     if (Theme.of(context).platform == TargetPlatform.iOS) {
       return CupertinoScrollbar(
         thumbVisibility: isAlwaysShown ?? thumbVisibility ?? false,
