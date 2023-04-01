@@ -21,6 +21,15 @@ void mungeFile(File file) {
   file.writeAsStringSync('\n', mode: FileMode.append);
 }
 
+void addFile(TestFlutterTree tree, File file) {
+  file.writeAsStringSync('// contents\n');
+  tree.runSyncSuccess(<String>['git', 'add', file.path]);
+}
+
+void removeFile(TestFlutterTree tree, File file) {
+  tree.runSyncSuccess(<String>['git', 'rm', file.path]);
+}
+
 const List<String> commitCmd = <String>['git', 'commit', '-am', 'test commit'];
 
 Future<void> main() async {
@@ -53,6 +62,27 @@ Future<void> main() async {
     expect(tree.ensureToolWithFakeDart(), isCacheMiss);
   });
 
+  test('add a tool source file -> invalidate cache', () {
+    final TestFlutterTree tree = TestFlutterTree.takeWarm();
+    final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
+    addFile(tree, toolsLibSrc.childFile('device_differently.dart'));
+    tree.runSyncSuccess(commitCmd);
+    expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+  });
+
+  test('remove some tool source file -> invalidate cache', () {
+    final TestFlutterTree tree = TestFlutterTree.takeWarm();
+    final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
+    removeFile(tree, toolsLibSrc.childFile('device.dart')); // packages/flutter_tools/lib/src/device.dart
+    tree.runSyncSuccess(commitCmd);
+    // In removing a tool source file, we're counting extra hard on the fake Dart
+    // not attempting to actually compile the tool.  (If we wanted to remove a
+    // source file that's part of the tool -- so that it really should cause a
+    // cache miss -- and yet have the resulting tree validly compile,
+    // then we'd have to work a lot harder.)
+    expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+  });
+
   test('change tool tests -> hit cache', () {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
     final Directory testDir = tree.toolsPackageDir.childDirectory('test'); // packages/flutter_tools/test/
@@ -76,8 +106,10 @@ Future<void> main() async {
   test('change example app -> hit cache', () {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
     mungeFile(tree.helloWorldDir.childFile('pubspec.yaml'));
-    mungeFile(tree.helloWorldDir.childDirectory('lib').childFile('main.dart'));
     mungeFile(tree.helloWorldDir.childDirectory('android').childDirectory('app').childFile('build.gradle'));
+    mungeFile(tree.helloWorldDir.childDirectory('lib').childFile('main.dart'));
+    removeFile(tree, tree.helloWorldDir.childDirectory('lib').childFile('arabic.dart'));
+    addFile(tree, tree.helloWorldDir.childDirectory('lib').childFile('other.dart'));
     tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
