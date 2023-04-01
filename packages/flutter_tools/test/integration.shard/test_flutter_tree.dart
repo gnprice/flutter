@@ -16,16 +16,21 @@ const FileSystem fileSystem = LocalFileSystem();
 const ProcessManager processManager = LocalProcessManager();
 
 /// The value the entrypoint writes into `flutterToolsStampFile`.
+///
+/// The [toolArgs] parameter corresponds to `FLUTTER_TOOL_ARGS`
+/// in the entrypoint scripts.
 String flutterToolsStampValue({required String revision, String toolArgs = ''}) {
   return '$revision:$toolArgs';
 }
 
+/// Additional members on [FlutterTree] which are helpful for [TestFlutterTree]
+/// and its users.
 extension FlutterTreeExtension on FlutterTree {
-  Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache');
-  File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot');
-  File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp');
-  Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk');
-  File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp');
+  Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache'); // bin/cache/
+  File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot'); // bin/cache/flutter_tools.snapshot
+  File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp'); // bin/cache/flutter_tools.stamp
+  Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk'); // bin/cache/dart-sdk/
+  File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp'); // bin/cache/engine-dart-sdk.stamp
 
   String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput as String;
 
@@ -43,7 +48,7 @@ extension FlutterTreeExtension on FlutterTree {
   List<String> gitModifiedFiles({String? diffFilter}) {
     final List<String> command = <String>[
       'git', 'diff',
-      '--no-renames', // disables finding renames and finding copies, too
+      '--no-renames', // disables finding renames, and finding copies too
       '--name-only', '-z',
       if (diffFilter != null)
         '--diff-filter=$diffFilter',
@@ -69,6 +74,11 @@ extension FlutterTreeExtension on FlutterTree {
     runSyncSuccess(<String>[binFlutter.path]);
   }
 
+  /// Start a process at [root] and run it to completion, throwing an exception
+  /// on failure.
+  ///
+  /// This is a convenience wrapper for [ProcessManagerExtension.runSyncSuccess],
+  /// providing `workingDirectory`.
   ProcessResult runSyncSuccess(
     List<String> command, {
     Map<String, String>? environment,
@@ -93,7 +103,7 @@ extension FlutterTreeExtension on FlutterTree {
 ///
 /// For each file or directory found under [source], there will be a
 /// corresponding entity at the same relative path under [target],
-/// with the same contents and same last-modified time and other metadata.
+/// with the same contents, same last-modified time, and same other metadata.
 /// Any entities under [target] that do not correspond to an entity under
 /// [source] will be deleted.
 ///
@@ -115,9 +125,14 @@ void _rsyncTreesSync(Directory source, Directory target) {
 ///
 /// Successive test cases can reuse the tree by calling [TestFlutterTree.takeClean],
 /// which will reset it to its original state.
+/// TODO discuss takeWarm
 ///
 /// After all tests have run, [TestFlutterTree.dispose] should be called
 /// in order to delete the temporary tree.
+///
+/// See also:
+/// * [hostFlutterTree], the Flutter tree that the running program
+///   is itself part of.
 class TestFlutterTree extends FlutterTree {
   /// Take the shared global tree, resetting it to a pristine state.
   factory TestFlutterTree.takeClean() {

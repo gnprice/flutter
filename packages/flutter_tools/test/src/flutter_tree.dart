@@ -7,6 +7,13 @@ import 'package:file/local.dart';
 
 import 'common.dart';
 
+/// A Flutter source tree.
+///
+/// See also:
+/// * [hostFlutterTree], an instance of this class representing
+///   the Flutter source tree that the running program is part of.
+/// * [TestFlutterTree], a subclass providing a temporary Flutter tree
+///   which can be freely mutated for testing.
 class FlutterTree {
   FlutterTree(this.root);
 
@@ -28,5 +35,8 @@ class FlutterTree {
   Directory get toolsPackageDir => packagesDir.childDirectory('flutter_tools'); // packages/flutter_tools/
 }
 
+/// The Flutter source tree that this program is part of.
+///
+/// The tree is the one located by [getFlutterRoot].
 final FlutterTree hostFlutterTree = FlutterTree(
   const LocalFileSystem().directory(getFlutterRoot()).absolute);
