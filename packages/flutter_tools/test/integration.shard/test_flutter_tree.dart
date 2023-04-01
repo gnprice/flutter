@@ -149,7 +149,8 @@ class TestFlutterTree extends FlutterTree {
   ///
   /// Using this can be expensive because any operation involving the
   /// [binDart] or [binFlutter] entrypoint scripts may cause the Dart SDK
-  /// to be downloaded from scratch.  Consider [TestFlutterTree.takeWarm].
+  /// to be downloaded from scratch and the tool snapshot to be recompiled.
+  /// Consider [TestFlutterTree.takeWarm].
   ///
   /// When using this, be sure to call [TestFlutterTree.dispose] after
   /// all tests have run, in order to avoid leaving a large temporary tree
@@ -163,11 +164,10 @@ class TestFlutterTree extends FlutterTree {
   /// This is equivalent to [TestFlutterTree.takeClean] followed by
   /// [ensureToolSync], but more efficient.
   ///
-  /// The Dart SDK at [dartSdkDir] will be copied from the one in
-  /// [hostFlutterTree], which can avoid downloading it from scratch.
+  /// The Dart SDK at [dartSdkDir] and tool snapshot at [snapshotFile] will be
+  /// copied from [hostFlutterTree], to avoid downloading and compiling anew.
   /// On the first call to this factory constructor, the warm tree is memoized;
-  /// subsequent calls will copy the memoized version, saving both the Dart SDK
-  /// download and the subsequent steps of compiling the Flutter tool.
+  /// subsequent calls will copy the memoized version.
   ///
   /// When using this, be sure to call [TestFlutterTree.dispose] after
   /// all tests have run, in order to avoid leaving a large temporary tree
@@ -282,7 +282,7 @@ class TestFlutterTree extends FlutterTree {
     // Warm the rest of the cache directly in the test tree.
     assert(flutterToolsStampFile.readStringLikeShell() == null);
     final String stampValue = flutterToolsStampValue(revision: baseRevision);
-    ensureToolWithFakeDart(); // TODO HERE
+    ensureToolWithFakeDart();
     assert(flutterToolsStampFile.readStringLikeShell() == stampValue);
 
     _warmTree = fileSystem
@@ -307,6 +307,26 @@ class TestFlutterTree extends FlutterTree {
   File get dartBinary => dartSdkDir.childDirectory('bin').childFile('dart'); // bin/cache/dart-sdk/bin/dart
   File get dartBinaryOrig => dartSdkDir.childDirectory('bin').childFile('dart.orig'); // bin/cache/dart-sdk/bin/dart.orig
 
+  /// Run the tool entrypoint to update the cache, with the Dart binary faked out.
+  ///
+  /// The fake `dart` logs the commands it receives, and this method returns
+  /// the list of log entries, for testing the entrypoint's behavior.
+  ///
+  /// The fake `dart` ignores most possible commands, except for logging them.
+  /// For some commands used by the entrypoint when it tries to update the tool,
+  /// it provides the needed behavior using shortcuts for efficiency:
+  ///
+  ///  * A command that looks like the entrypoint's `dart pub upgrade`
+  ///    will fake it by updating the last-modified time on `pubspec.lock`.
+  ///    (Each `pubspec.lock` in the baseline tree comes from [hostFlutterTree],
+  ///    so effectively we rely on those being up to date.)
+  ///
+  ///  * A command that looks like the entrypoint's command to generate the
+  ///    tool snapshot will fake it by copying from [hostFlutterTree].
+  ///
+  /// In particular, if this tree contains changes relative to [hostFlutterTree]
+  /// that would affect the behavior of the tool, the resulting snapshot will
+  /// not reflect those changes.
   List<String> ensureToolWithFakeDart() {
     fakeDartLog.writeAsStringSync('');
     dartBinary.renameSync(dartBinaryOrig.path);
@@ -316,6 +336,9 @@ class TestFlutterTree extends FlutterTree {
     return fakeDartLog.readAsLinesSync();
   }
 
+  /// Write to [dartBinary] a script that fakes out the `dart` command.
+  ///
+  /// See [ensureToolWithFakeDart].
   void _writeFakeDart() {
     dartBinary.writeAsStringSync('''
 #!/usr/bin/env bash
@@ -328,6 +351,13 @@ function log_command() {
 }
 
 case "\$*" in
+  "pub upgrade "*)
+    # This is a `dart pub upgrade` command, as in pub_upgrade_with_retry .
+    # Just update the last-modified time on the pubspec.lock .
+    touch pubspec.lock
+    log_command "pub upgrade"
+    ;;
+
   *" --disable-dart-dev "*" --snapshot-kind=app-jit "*)
     # This is the command to generate the snapshot,
     # in the upgrade_flutter function in bin/internal/shared.sh .
@@ -335,13 +365,6 @@ case "\$*" in
     cp ${shellEscapeString(hostFlutterTree.snapshotFile.path)} \\
       ${shellEscapeString(snapshotFile.path)}
     log_command generate-snapshot
-    ;;
-
-  "pub upgrade "*)
-    # This is a `dart pub upgrade` command, as in pub_upgrade_with_retry .
-    # Just update the last-modified time on the pubspec.lock .
-    touch pubspec.lock
-    log_command "pub upgrade"
     ;;
 
   *" --disable-dart-dev "*" "${shellEscapeString(snapshotFile.path)} \\
@@ -352,6 +375,10 @@ case "\$*" in
     ;;
 
   *)
+    # This is some other `dart` invocation we don't recognize;
+    # perhaps the "dart" case at the end of shared::execute,
+    # which leaves no recognizable signature of its own.
+    # Do nothing.
     log_command other
 esac
 ''');
