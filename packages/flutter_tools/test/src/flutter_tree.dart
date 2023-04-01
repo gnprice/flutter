@@ -33,6 +33,9 @@ class FlutterTree {
   Directory get binInternalDir => binDir.childDirectory('internal'); // bin/internal/
   File get engineVersionFile => binInternalDir.childFile('engine.version'); // bin/internal/engine.version
 
+  Directory get examplesDir => root.childDirectory('examples'); // examples/
+  Directory get helloWorldDir => examplesDir.childDirectory('hello_world'); // examples/hello_world/
+
   Directory get packagesDir => root.childDirectory('packages'); // packages/
   Directory get frameworkDir => packagesDir.childDirectory('flutter'); // packages/flutter/
   Directory get toolsPackageDir => packagesDir.childDirectory('flutter_tools'); // packages/flutter_tools/

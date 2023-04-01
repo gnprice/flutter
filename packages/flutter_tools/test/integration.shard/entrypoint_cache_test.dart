@@ -73,6 +73,14 @@ Future<void> main() async {
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
 
+  test('change example app -> hit cache', () {
+    final TestFlutterTree tree = TestFlutterTree.takeWarm();
+    mungeFile(tree.helloWorldDir.childFile('pubspec.yaml'));
+    mungeFile(tree.helloWorldDir.childDirectory('lib').childFile('main.dart'));
+    mungeFile(tree.helloWorldDir.childDirectory('android').childDirectory('app').childFile('build.gradle'));
+    tree.runSyncSuccess(commitCmd);
+    expect(tree.ensureToolWithFakeDart(), isCacheHit);
+  });
+
   // TODO test deleting file, or adding new one, in both hit and miss
-  // TODO test commits to examples
 }
