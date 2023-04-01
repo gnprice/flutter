@@ -125,6 +125,4 @@ Future<void> main() async {
     tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
-
-  // TODO test deleting file, or adding new one, in both hit and miss
 }
