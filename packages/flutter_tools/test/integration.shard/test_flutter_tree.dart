@@ -120,12 +120,19 @@ void _rsyncTreesSync(Directory source, Directory target) {
 /// A temporary copy of the Flutter tree, to be freely mutated for testing.
 ///
 /// This is a real Git worktree in the real filesystem.
-/// To save resources, it reuses the Git object and pack files from
-/// the Flutter tree that these tests are found in.
+/// Its contents are based on those of [hostFlutterTree]: the Git commit
+/// [baseRevision] is the current HEAD of [hostFlutterTree], plus one
+/// added commit for any changes in the [hostFlutterTree] worktree
+/// that are not yet committed to Git.
 ///
-/// Successive test cases can reuse the tree by calling [TestFlutterTree.takeClean],
-/// which will reset it to its original state.
-/// TODO discuss takeWarm
+/// To save resources, this tree reuses the Git object and pack files from
+/// [hostFlutterTree].  When using [TestFlutterTree.takeWarm], it also
+/// uses a copy of the Dart SDK from [hostFlutterTree] as its own cached
+/// Dart SDK.
+///
+/// Successive test cases can reuse the tree by calling
+/// [TestFlutterTree.takeWarm] or [TestFlutterTree.takeClean],
+/// either of which will reset it to a known state.
 ///
 /// After all tests have run, [TestFlutterTree.dispose] should be called
 /// in order to delete the temporary tree.
@@ -135,6 +142,18 @@ void _rsyncTreesSync(Directory source, Directory target) {
 ///   is itself part of.
 class TestFlutterTree extends FlutterTree {
   /// Take the shared global tree, resetting it to a pristine state.
+  ///
+  /// The tree will be on branch `main` at commit [baseRevision].
+  /// There will be no files or directories in the tree except
+  /// those put there by Git.
+  ///
+  /// Using this can be expensive because any operation involving the
+  /// [binDart] or [binFlutter] entrypoint scripts may cause the Dart SDK
+  /// to be downloaded from scratch.  Consider [TestFlutterTree.takeWarm].
+  ///
+  /// When using this, be sure to call [TestFlutterTree.dispose] after
+  /// all tests have run, in order to avoid leaving a large temporary tree
+  /// lying around in the filesystem.
   factory TestFlutterTree.takeClean() {
     return TestFlutterTree._take().._reset();
   }
@@ -142,9 +161,17 @@ class TestFlutterTree extends FlutterTree {
   /// Take the shared global tree, resetting it to a warm-cache state.
   ///
   /// This is equivalent to [TestFlutterTree.takeClean] followed by
-  /// [ensureToolSync], but differs in that the tree is memoized and
-  /// subsequently copied from the memoized version, which is much faster than
-  /// compiling again.
+  /// [ensureToolSync], but more efficient.
+  ///
+  /// The Dart SDK at [dartSdkDir] will be copied from the one in
+  /// [hostFlutterTree], which can avoid downloading it from scratch.
+  /// On the first call to this factory constructor, the warm tree is memoized;
+  /// subsequent calls will copy the memoized version, saving both the Dart SDK
+  /// download and the subsequent steps of compiling the Flutter tool.
+  ///
+  /// When using this, be sure to call [TestFlutterTree.dispose] after
+  /// all tests have run, in order to avoid leaving a large temporary tree
+  /// lying around in the filesystem.
   factory TestFlutterTree.takeWarm() {
     return TestFlutterTree._take().._warm();
   }
@@ -154,7 +181,7 @@ class TestFlutterTree extends FlutterTree {
     return _instance ??= TestFlutterTree._create();
   }
 
-  TestFlutterTree._(this.origRevision, super.root);
+  TestFlutterTree._(this._origRevision, super.root);
 
   factory TestFlutterTree._create() {
     final String origRevision = hostFlutterTree.headRevision();
@@ -163,15 +190,26 @@ class TestFlutterTree extends FlutterTree {
     return TestFlutterTree._(origRevision, root).._initialize();
   }
 
+  /// Delete the shared global temporary tree from the filesystem.
   static void dispose() {
     _instance?._dispose();
     _instance = null;
   }
 
+  /// The shared global instance of [TestFlutterTree].
   static TestFlutterTree? _instance;
 
-  final String origRevision;
+  /// The Git commit ID of this tree in its baseline state.
+  ///
+  /// This will be the current HEAD of [hostFlutterTree], plus one
+  /// added commit for any changes in the [hostFlutterTree] worktree
+  /// that are not yet committed to Git.
   late final String baseRevision;
+
+  /// The Git commit ID that is HEAD in [hostFlutterTree].
+  final String _origRevision;
+
+  /// The memoized warm tree for [TestFlutterTree.takeWarm].
   Directory? _warmTree;
 
   void _initialize() {
@@ -182,7 +220,7 @@ class TestFlutterTree extends FlutterTree {
       hostFlutterTree.root.childDirectory('.git').path,
       root.path,
     ]);
-    runSyncSuccess(<String>['git', 'checkout', '-B', 'main', origRevision]);
+    runSyncSuccess(<String>['git', 'checkout', '-B', 'main', _origRevision]);
 
     // Sync uncommitted changes from [hostFlutterTree].
     final List<String> filesAdded = hostFlutterTree.gitModifiedFiles(diffFilter: 'A');
@@ -209,7 +247,7 @@ class TestFlutterTree extends FlutterTree {
       ]);
       baseRevision = headRevision();
     } else {
-      baseRevision = origRevision;
+      baseRevision = _origRevision;
     }
   }
 
@@ -244,7 +282,7 @@ class TestFlutterTree extends FlutterTree {
     // Warm the rest of the cache directly in the test tree.
     assert(flutterToolsStampFile.readStringLikeShell() == null);
     final String stampValue = flutterToolsStampValue(revision: baseRevision);
-    ensureToolWithFakeDart();
+    ensureToolWithFakeDart(); // TODO HERE
     assert(flutterToolsStampFile.readStringLikeShell() == stampValue);
 
     _warmTree = fileSystem

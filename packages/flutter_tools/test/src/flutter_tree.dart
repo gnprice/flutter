@@ -15,8 +15,11 @@ import 'common.dart';
 /// * [TestFlutterTree], a subclass providing a temporary Flutter tree
 ///   which can be freely mutated for testing.
 class FlutterTree {
-  FlutterTree(this.root);
+  FlutterTree(this.root) : assert(root.isAbsolute);
 
+  /// The root of the tree.
+  ///
+  /// This must be absolute.
   final Directory root;
 
   // When adding more file and subdirectory getters,
