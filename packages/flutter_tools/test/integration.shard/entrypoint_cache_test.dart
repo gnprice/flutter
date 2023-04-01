@@ -17,13 +17,6 @@ final List<Matcher> upgradeMatcherList = <Matcher>[
 final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
 final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
 
-extension TestFlutterTreeExtension on TestFlutterTree {
-  bool gitHasFile(FileSystemEntity file) { // TODO redundant?
-    return (runSyncSuccess(<String>['git', 'ls-files', '--', file.path]).stdout
-            as String).isNotEmpty;
-  }
-}
-
 void mungeFile(File file) {
   assert(file.existsSync());
   file.writeAsStringSync('\n', mode: FileMode.append);
@@ -31,14 +24,12 @@ void mungeFile(File file) {
 
 void addFile(TestFlutterTree tree, File file) {
   assert(!file.existsSync());
-  assert(!tree.gitHasFile(file));
   file.writeAsStringSync('// contents\n');
   tree.runSyncSuccess(<String>['git', 'add', '--', file.path]);
 }
 
 void removeFile(TestFlutterTree tree, File file) {
   assert(file.existsSync());
-  assert(tree.gitHasFile(file));
   tree.runSyncSuccess(<String>['git', 'rm', '--', file.path]);
 }
 
