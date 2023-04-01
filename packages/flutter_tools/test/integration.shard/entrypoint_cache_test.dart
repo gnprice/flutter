@@ -17,15 +17,11 @@ final List<Matcher> upgradeMatcherList = <Matcher>[
 final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
 final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
 
-extension TestFlutterTreeExtension on TestFlutterTree {
-  void makeCommit() {
-    runSyncSuccess(<String>['git', 'commit', '-am', 'test commit']);
-  }
-}
-
 void mungeFile(File file) {
   file.writeAsStringSync('\n', mode: FileMode.append);
 }
+
+const List<String> commitCmd = <String>['git', 'commit', '-am', 'test commit'];
 
 Future<void> main() async {
   tearDownAll(TestFlutterTree.dispose);
@@ -38,14 +34,14 @@ Future<void> main() async {
   test('change tool pubspec.yaml -> invalidate cache', () {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
     mungeFile(tree.toolsPackageDir.childFile('pubspec.yaml')); // packages/flutter_tools/pubspec.yaml
-    tree.makeCommit();
+    tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheMiss);
   });
 
   test('change tool bin-dart script -> invalidate cache', () {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
     mungeFile(tree.toolsPackageDir.childDirectory('bin').childFile('flutter_tools.dart')); // packages/flutter_tools/bin/flutter_tools.dart
-    tree.makeCommit();
+    tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheMiss);
   });
 
@@ -53,7 +49,7 @@ Future<void> main() async {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
     final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
     mungeFile(toolsLibSrc.childFile('device.dart')); // packages/flutter_tools/lib/src/device.dart
-    tree.makeCommit();
+    tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheMiss);
   });
 
@@ -63,7 +59,7 @@ Future<void> main() async {
     mungeFile(testDir.childDirectory('src').childFile('common.dart'));
     mungeFile(testDir.childDirectory('general.shard').childFile('compile_test.dart'));
     mungeFile(testDir.childDirectory('data').childDirectory('asset_test').childDirectory('main').childFile('pubspec.yaml'));
-    tree.makeCommit();
+    tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
 
@@ -73,7 +69,7 @@ Future<void> main() async {
     mungeFile(tree.frameworkDir.childDirectory('lib').childFile('foundation.dart'));
     mungeFile(tree.frameworkDir.childDirectory('lib').childDirectory('src').childDirectory('widgets').childFile('framework.dart'));
     mungeFile(tree.frameworkDir.childDirectory('test').childDirectory('rendering').childFile('box_test.dart'));
-    tree.makeCommit();
+    tree.runSyncSuccess(commitCmd);
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
 
