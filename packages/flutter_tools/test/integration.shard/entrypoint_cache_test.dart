@@ -9,7 +9,7 @@ import 'package:file/file.dart';
 import '../src/common.dart';
 import 'test_flutter_tree.dart';
 
-final List<Matcher> upgradeMatcherList = [
+final List<Matcher> upgradeMatcherList = <Matcher>[
   startsWith('pub upgrade:'),
   startsWith('generate-snapshot:'),
 ];
