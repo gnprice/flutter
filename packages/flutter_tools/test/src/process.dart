@@ -85,6 +85,11 @@ String _asShellOutput(String raw) {
   return raw.replaceFirst(_trailingNewlineRegExp, '');
 }
 
+List<int> _bytesAsShellOutput(List<int> raw) {
+  final int end = 1 + raw.lastIndexWhere((int byte) => byte != 0x0a);
+  return end == raw.length ? raw : raw.sublist(0, end);
+}
+
 extension FileExtension on File {
   /// Reads the file contents as a string with the semantics of `$(cat …)`,
   /// returning null if the operation fails.
@@ -118,14 +123,16 @@ extension ProcessResultExtension on ProcessResult {
   /// newlines at the end of the string.  For example, if [stdout] is any of
   /// 'a\nb', 'a\nb\n', or 'a\nb\n\n\n', then [shellOutput] will be 'a\nb'.
   ///
+  /// This value has the same type as [stdout]: either `List<int>` or `String`.
+  ///
   /// See also:
   /// * [readLikeShell], for reading a file with the semantics of `$(cat …)`.
   /// * the Bash manual on command substitution: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
-  String get shellOutput {
+  dynamic get shellOutput {
     final dynamic stdout = this.stdout;
     switch (stdout) {
       case String(): return _asShellOutput(stdout);
-      case List<int>(): throw UnimplementedError(); // TODO
+      case List<int>(): return _bytesAsShellOutput(stdout);
       default: throw Error(); // forbidden by contract of [output]
     }
   }

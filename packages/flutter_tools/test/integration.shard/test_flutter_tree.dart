@@ -27,7 +27,7 @@ extension FlutterTreeExtension on FlutterTree {
   Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk');
   File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp');
 
-  String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput;
+  String headRevision() => runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).shellOutput as String;
 
   /// List the files where the worktree differs from the HEAD revision.
   ///
