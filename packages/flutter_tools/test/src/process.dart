@@ -79,14 +79,29 @@ extension ProcessManagerExtension on ProcessManager {
   }
 }
 
-String asShellOutput(String raw) {
-  return raw.replaceFirst(RegExp(r'\n*$'), '');
+final RegExp _trailingNewlineRegExp = RegExp(r'\n*$');
+
+String _asShellOutput(String raw) {
+  return raw.replaceFirst(_trailingNewlineRegExp, '');
 }
 
 extension FileExtension on File {
-  String? readLikeShell() {
+  /// Reads the file contents as a string with the semantics of `$(cat …)`,
+  /// returning null if the operation fails.
+  ///
+  /// This is commonly the intended semantics when a file was meant to be
+  /// read or written by a shell script.
+  ///
+  /// The file's contents are read using the given [Encoding], and then
+  /// any run of newlines at the end of the string is removed.
+  ///
+  /// See also:
+  /// * [ProcessResultExtension.shellOutput], for the semantics of `$(…)`
+  ///   on an arbitrary command.
+  /// * the Bash manual on command substitution `$(…)`: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
+  String? readStringLikeShell({Encoding encoding = utf8}) {
     try {
-      return asShellOutput(readAsStringSync());
+      return _asShellOutput(readAsStringSync(encoding: encoding));
     } on FileSystemException {
       return null;
     }
@@ -96,16 +111,21 @@ extension FileExtension on File {
 extension ProcessResultExtension on ProcessResult {
   /// The command's output, as shell command substitution `$(…)` would take it.
   ///
-  /// This is the result of removing from [stdout] any run of newlines at the
-  /// end of the string.  For example, if [stdout] is any of 'a\nb', 'a\nb\n',
-  /// or 'a\nb\n\n\n', then [shellOutput] will be 'a\nb'.
+  /// Among commands following Unix CLI conventions, this is commonly the
+  /// intended semantics for consuming the output.
   ///
-  /// TODO link reference
+  /// This is defined as the result of removing from [stdout] any run of
+  /// newlines at the end of the string.  For example, if [stdout] is any of
+  /// 'a\nb', 'a\nb\n', or 'a\nb\n\n\n', then [shellOutput] will be 'a\nb'.
+  ///
+  /// See also:
+  /// * [readLikeShell], for reading a file with the semantics of `$(cat …)`.
+  /// * the Bash manual on command substitution: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
   String get shellOutput {
     final dynamic stdout = this.stdout;
     switch (stdout) {
-      case String(): return asShellOutput(stdout);
-      case List<int>(): throw UnimplementedError();
+      case String(): return _asShellOutput(stdout);
+      case List<int>(): throw UnimplementedError(); // TODO
       default: throw Error(); // forbidden by contract of [output]
     }
   }

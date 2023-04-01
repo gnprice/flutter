@@ -227,10 +227,10 @@ class TestFlutterTree extends FlutterTree {
     hostFlutterTree.engineStampFile.copySync(engineStampFile.path);
 
     // Warm the rest of the cache directly in the test tree.
-    assert(flutterToolsStampFile.readLikeShell() == null);
+    assert(flutterToolsStampFile.readStringLikeShell() == null);
     final String stampValue = flutterToolsStampValue(revision: baseRevision);
     ensureToolWithFakeDart();
-    assert(flutterToolsStampFile.readLikeShell() == stampValue);
+    assert(flutterToolsStampFile.readStringLikeShell() == stampValue);
 
     _warmTree = fileSystem
       .systemTempDirectory.createTempSync('flutter_test_tree_warm.').absolute;
