@@ -271,7 +271,7 @@ full_command="dart \$*"
 
 function log_command() {
   local description="\$1"
-  echo "\$description: \$full_command" >>${shellEscapeArgument(fakeDartLog.path)}
+  echo "\$description: \$full_command" >>${shellEscapeString(fakeDartLog.path)}
 }
 
 case "\$*" in
@@ -279,8 +279,8 @@ case "\$*" in
     # This is the command to generate the snapshot,
     # in the upgrade_flutter function in bin/internal/shared.sh .
     # Fake generating the snapshot, by copying from the host tree.
-    cp ${shellEscapeArgument(hostFlutterTree.snapshotFile.path)} \\
-      ${shellEscapeArgument(snapshotFile.path)}
+    cp ${shellEscapeString(hostFlutterTree.snapshotFile.path)} \\
+      ${shellEscapeString(snapshotFile.path)}
     log_command generate-snapshot
     ;;
 
@@ -291,8 +291,8 @@ case "\$*" in
     log_command "pub upgrade"
     ;;
 
-  *" --disable-dart-dev "*" "${shellEscapeArgument(snapshotFile.path)} \\
-  | *" --disable-dart-dev "*" "${shellEscapeArgument(snapshotFile.path)}" "*)
+  *" --disable-dart-dev "*" "${shellEscapeString(snapshotFile.path)} \\
+  | *" --disable-dart-dev "*" "${shellEscapeString(snapshotFile.path)}" "*)
     # This looks like the "flutter" case at the end of shared::execute.
     # Do nothing.
     log_command flutter

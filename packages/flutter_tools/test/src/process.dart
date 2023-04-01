@@ -15,18 +15,38 @@ import 'package:process/process.dart';
 /// an error in that direction would be merely cosmetic.
 final RegExp _definitelyShellLiteralWordRegExp = RegExp(r'^[a-zA-Z0-9./,_-]+$');
 
-String shellEscapeArgument(String value) {
+/// A string which a shell would parse as the given string value.
+///
+/// This method makes some effort to return the value unchanged,
+/// for the sake of a clean appearance, when doing so meets the requirements.
+/// For example, `shellEscapeString("asdf") == "asdf"`.
+String shellEscapeString(String value) {
   if (_definitelyShellLiteralWordRegExp.hasMatch(value)) {
     return value;
   }
   return "'${value.replaceAll("'", r"'\''")}'";
 }
 
+/// A string which a shell would parse as the given command.
+///
+/// Useful for printing a command unambiguously, or for printing
+/// a command the user might want to copy-paste and run.
+///
+/// This method makes some effort to print the command's arguments
+/// verbatim, for the sake of a clean appearance, where possible.
+/// For example, `shellEscapeCommand(['git', 'commit', '-am', 'a commit'])`
+/// returns `git commit -am 'a commit'`.
 String shellEscapeCommand(List<String> command) {
-  return command.map(shellEscapeArgument).join(' ');
+  return command.map(shellEscapeString).join(' ');
 }
 
 extension ProcessManagerExtension on ProcessManager {
+  /// Start a process and run it to completion, throwing an exception on failure.
+  ///
+  /// Like [runSync], this blocks until the child process terminates.
+  ///
+  /// If the child process exits with failure (a nonzero [ProcessResult.exitCode]),
+  /// this method throws an exception with details of the command and its output.
   ProcessResult runSyncSuccess(
     List<String> command, {
     String? workingDirectory,
