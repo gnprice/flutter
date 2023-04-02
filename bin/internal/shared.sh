@@ -153,7 +153,7 @@ function upgrade_flutter () (
     local old_revision="${stamp%%:*}" old_flutter_tool_args="${stamp#*:}"
     if [[ "$old_flutter_tool_args" == "$FLUTTER_TOOL_ARGS" ]] \
         && git -C "$FLUTTER_ROOT" diff --quiet "$old_revision" "$revision" \
-             -- "${flutter_tool_source_pathspecs[@]}"; then
+             -- "${flutter_tool_source_pathspecs[@]}" >/dev/null 2>&1; then
       # The cache has the same FLUTTER_TOOL_ARGS as we would compile,
       # and a revision with the same tool source as we would compile.
       # So that's a cache hit; just update the stamp.
