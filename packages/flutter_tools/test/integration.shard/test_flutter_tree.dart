@@ -382,6 +382,6 @@ case "\$*" in
     log_command other
 esac
 ''');
-    processManager.runSyncSuccess(<String>['chmod', '+x', '--', dartBinary.path]); // https://github.com/dart-lang/sdk/issues/15078
+    processManager.runSyncSuccess(<String>['chmod', '+x', dartBinary.path]); // https://github.com/dart-lang/sdk/issues/15078
   }
 }
