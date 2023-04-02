@@ -20,6 +20,8 @@ final RegExp _definitelyShellLiteralWordRegExp = RegExp(r'^[a-zA-Z0-9./,_-]+$');
 /// This method makes some effort to return the value unchanged,
 /// for the sake of a clean appearance, when doing so meets the requirements.
 /// For example, `shellEscapeString("asdf") == "asdf"`.
+///
+/// See also [shellEscapeCommand], for operating on a whole command line.
 String shellEscapeString(String value) {
   if (_definitelyShellLiteralWordRegExp.hasMatch(value)) {
     return value;
@@ -32,10 +34,13 @@ String shellEscapeString(String value) {
 /// Useful for printing a command unambiguously, or for printing
 /// a command the user might want to copy-paste and run.
 ///
-/// This method makes some effort to print the command's arguments
+/// This method makes some effort to print the command's elements
 /// verbatim, for the sake of a clean appearance, where possible.
 /// For example, `shellEscapeCommand(['git', 'commit', '-am', 'a commit'])`
 /// returns `git commit -am 'a commit'`.
+///
+/// See also [shellEscapeString], for operating on an individual
+/// argument of a command.
 String shellEscapeCommand(List<String> command) {
   return command.map(shellEscapeString).join(' ');
 }
@@ -126,7 +131,7 @@ extension ProcessResultExtension on ProcessResult {
   /// This value has the same type as [stdout]: either `List<int>` or `String`.
   ///
   /// See also:
-  /// * [readLikeShell], for reading a file with the semantics of `$(cat …)`.
+  /// * [FileExtension.readStringLikeShell], for reading a file with the semantics of `$(cat …)`.
   /// * the Bash manual on command substitution: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
   dynamic get shellOutput {
     final dynamic stdout = this.stdout;
