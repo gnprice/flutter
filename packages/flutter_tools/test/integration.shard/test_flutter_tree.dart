@@ -6,14 +6,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
-import 'package:file/local.dart';
-import 'package:process/process.dart';
 
 import '../src/flutter_tree.dart';
 import '../src/process.dart';
-
-const FileSystem fileSystem = LocalFileSystem();
-const ProcessManager processManager = LocalProcessManager();
+import 'test_utils.dart';
 
 /// The value the entrypoint writes into `flutterToolsStampFile`.
 ///

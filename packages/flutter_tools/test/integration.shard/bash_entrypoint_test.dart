@@ -9,10 +9,8 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/io.dart';
 
 import '../src/common.dart';
+import '../src/flutter_tree.dart';
 import 'test_utils.dart';
-
-final String flutterRootPath = getFlutterRoot();
-final Directory flutterRoot = fileSystem.directory(flutterRootPath);
 
 Future<void> main() async {
   test('verify terminating flutter/bin/dart terminates the underlying dart process', () async {
@@ -52,20 +50,14 @@ Future<void> main() async {
 
 // A test Dart app that will run until it receives SIGTERM
 File get listenForSigtermScript {
-  return flutterRoot
-      .childDirectory('packages')
-      .childDirectory('flutter_tools')
+  return hostFlutterTree.toolsPackageDir
       .childDirectory('test')
       .childDirectory('integration.shard')
       .childDirectory('test_data')
-      .childFile('listen_for_sigterm.dart')
-      .absolute;
+      .childFile('listen_for_sigterm.dart');
 }
 
 // The executable bash entrypoint for the Dart binary.
 File get dartBash {
-  return flutterRoot
-      .childDirectory('bin')
-      .childFile('dart')
-      .absolute;
+  return hostFlutterTree.binDart;
 }
