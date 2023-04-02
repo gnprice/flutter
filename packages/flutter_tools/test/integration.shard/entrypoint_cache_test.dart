@@ -43,6 +43,18 @@ Future<void> main() async {
     expect(tree.ensureToolWithFakeDart(), isCacheHit);
   });
 
+  test('change engine version -> invalidate snapshot cache', () {
+    final TestFlutterTree tree = TestFlutterTree.takeWarm();
+    // Simulate rolling the engine version (with no other changes)…
+    const String fakeEngineVersion = '0123456789abcdef0123456789abcdef012345678';
+    tree.engineVersionFile.writeAsStringSync('$fakeEngineVersion\n');
+    tree.runSyncSuccess(commitCmd);
+    // … and having already downloaded the new version's Dart SDK.
+    tree.engineStampFile.writeAsStringSync('$fakeEngineVersion\n');
+    // The entrypoint script should recompile the snapshot.
+    expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+  });
+
   test('change tool pubspec.yaml -> invalidate cache', () {
     final TestFlutterTree tree = TestFlutterTree.takeWarm();
     mungeFile(tree.toolsPackageDir.childFile('pubspec.yaml')); // packages/flutter_tools/pubspec.yaml

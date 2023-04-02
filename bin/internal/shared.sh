@@ -111,7 +111,8 @@ function _wait_for_lock () {
 # These are Git pathspecs, relative to the root of the Flutter repo.
 # Together they include all the inputs to compiling the tool.
 flutter_tool_source_pathspecs=(
-  packages/flutter_tools/pubspec.yaml
+  bin/internal/engine.version         # aka ENGINE_VERSION
+  packages/flutter_tools/pubspec.yaml # from FLUTTER_TOOLS_DIR
   packages/flutter_tools/bin/
   packages/flutter_tools/lib/
 )
