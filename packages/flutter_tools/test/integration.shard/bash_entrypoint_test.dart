@@ -14,11 +14,18 @@ import 'test_utils.dart';
 
 Future<void> main() async {
   test('verify terminating flutter/bin/dart terminates the underlying dart process', () async {
+    // A test Dart app that will run until it receives SIGTERM
+    final File listenForSigtermScript = hostFlutterTree.toolsPackageDir
+      .childDirectory('test')
+      .childDirectory('integration.shard')
+      .childDirectory('test_data')
+      .childFile('listen_for_sigterm.dart');
+
     final Completer<void> childReadyCompleter = Completer<void>();
     String stdout = '';
     final Process process = await processManager.start(
         <String>[
-          dartBash.path,
+          hostFlutterTree.binDart.path,
           listenForSigtermScript.path,
         ],
     );
@@ -46,18 +53,4 @@ Future<void> main() async {
     expect(stdout, contains('Successfully received SIGTERM!'));
   },
   skip: platform.isWindows); // [intended] Windows does not use the bash entrypoint
-}
-
-// A test Dart app that will run until it receives SIGTERM
-File get listenForSigtermScript {
-  return hostFlutterTree.toolsPackageDir
-      .childDirectory('test')
-      .childDirectory('integration.shard')
-      .childDirectory('test_data')
-      .childFile('listen_for_sigterm.dart');
-}
-
-// The executable bash entrypoint for the Dart binary.
-File get dartBash {
-  return hostFlutterTree.binDart;
 }
