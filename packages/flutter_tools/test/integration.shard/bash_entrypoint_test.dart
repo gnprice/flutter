@@ -4,11 +4,12 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file/file.dart';
-import 'package:flutter_tools/src/base/io.dart';
 
 import '../src/common.dart';
+import '../src/process.dart';
 import 'test_flutter_tree.dart';
 import 'test_utils.dart';
 
@@ -22,7 +23,22 @@ Future<void> main() async {
     ];
 
     final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
-    final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
+    // final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
+
+    void expectCacheMiss(TestFlutterTree tree) {
+      // expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+
+      final String revision = tree.headRevision();
+      final String stampValue = flutterToolsStampValue(revision: revision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
+      final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
+      final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
+      // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
+      tree.ensureToolSync();
+      // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
+      expect(readStringLikeShell(tree.flutterToolsStampFile), stampValue);
+      expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
+      expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
+    }
 
     test('change nothing -> hit cache', () {
       final TestFlutterTree tree = TestFlutterTree.takeWarm();
@@ -38,21 +54,21 @@ Future<void> main() async {
       // … and having already downloaded the new version's Dart SDK.
       tree.engineStampFile.writeAsStringSync('$fakeEngineVersion\n');
       // The entrypoint script should recompile the snapshot.
-      expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+      expectCacheMiss(tree);
     });
 
     test('change tool pubspec.yaml -> invalidate cache', () {
       final TestFlutterTree tree = TestFlutterTree.takeWarm();
       mungeFile(tree.toolsPackageDir.childFile('pubspec.yaml')); // packages/flutter_tools/pubspec.yaml
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+      expectCacheMiss(tree);
     });
 
     test('change tool bin-dart script -> invalidate cache', () {
       final TestFlutterTree tree = TestFlutterTree.takeWarm();
       mungeFile(tree.toolsPackageDir.childDirectory('bin').childFile('flutter_tools.dart')); // packages/flutter_tools/bin/flutter_tools.dart
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+      expectCacheMiss(tree);
     });
 
     test('change some tool source file -> invalidate cache', () {
@@ -60,7 +76,7 @@ Future<void> main() async {
       final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
       mungeFile(toolsLibSrc.childFile('device.dart')); // packages/flutter_tools/lib/src/device.dart
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+      expectCacheMiss(tree);
     });
 
     test('add a tool source file -> invalidate cache', () {
@@ -68,7 +84,7 @@ Future<void> main() async {
       final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
       addFile(tree, toolsLibSrc.childFile('device_differently.dart'));
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+      expectCacheMiss(tree);
     });
 
     test('remove some tool source file -> invalidate cache', () {
@@ -81,7 +97,7 @@ Future<void> main() async {
       // (If we wanted to remove a source file that's part of the tool -- so that
       // it really should cause a cache miss -- and yet have the resulting tree
       // validly compile, then we'd have to work a lot harder.)
-      expect(tree.ensureToolWithFakeDart(), isCacheMiss);
+      expectCacheMiss(tree); // FAILURE
     });
 
     test('change tool tests -> hit cache', () {
