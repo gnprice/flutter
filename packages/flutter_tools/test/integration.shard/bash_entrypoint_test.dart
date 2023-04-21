@@ -17,13 +17,27 @@ Future<void> main() async {
   group('snapshot cache', () {
     tearDownAll(TestFlutterTree.dispose);
 
-    final List<Matcher> upgradeMatcherList = <Matcher>[
-      startsWith('pub upgrade:'),
-      startsWith('generate-snapshot:'),
-    ];
+    // final List<Matcher> upgradeMatcherList = <Matcher>[
+    //   startsWith('pub upgrade:'),
+    //   startsWith('generate-snapshot:'),
+    // ];
 
-    final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
+    // final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
     // final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
+
+    void expectCacheHit(TestFlutterTree tree) {
+      // expect(tree.ensureToolWithFakeDart(), isCacheHit);
+
+      final String baseStampValue = flutterToolsStampValue(revision: tree.baseRevision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
+      final String headStampValue = flutterToolsStampValue(revision: tree.headRevision(), toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
+      expect(readStringLikeShell(tree.flutterToolsStampFile), baseStampValue);
+      // final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
+      final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
+      tree.ensureToolSync();
+      expect(readStringLikeShell(tree.flutterToolsStampFile), headStampValue);
+      // expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
+      expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
+    }
 
     void expectCacheMiss(TestFlutterTree tree) {
       // expect(tree.ensureToolWithFakeDart(), isCacheMiss);
@@ -42,7 +56,7 @@ Future<void> main() async {
 
     test('change nothing -> hit cache', () {
       final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      expect(tree.ensureToolWithFakeDart(), isCacheHit);
+      expectCacheHit(tree);
     });
 
     test('change engine version -> invalidate snapshot cache', () {
@@ -107,7 +121,7 @@ Future<void> main() async {
       mungeFile(testDir.childDirectory('general.shard').childFile('compile_test.dart'));
       mungeFile(testDir.childDirectory('data').childDirectory('asset_test').childDirectory('main').childFile('pubspec.yaml'));
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheHit);
+      expectCacheHit(tree);
     });
 
     test('change framework -> hit cache', () {
@@ -117,7 +131,7 @@ Future<void> main() async {
       mungeFile(tree.frameworkDir.childDirectory('lib').childDirectory('src').childDirectory('widgets').childFile('framework.dart'));
       mungeFile(tree.frameworkDir.childDirectory('test').childDirectory('rendering').childFile('box_test.dart'));
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheHit);
+      expectCacheHit(tree);
     });
 
     test('change example app -> hit cache', () {
@@ -128,7 +142,7 @@ Future<void> main() async {
       removeFile(tree, tree.helloWorldDir.childDirectory('lib').childFile('arabic.dart'));
       addFile(tree, tree.helloWorldDir.childDirectory('lib').childFile('other.dart'));
       tree.runSyncSuccess(commitCmd);
-      expect(tree.ensureToolWithFakeDart(), isCacheHit);
+      expectCacheHit(tree);
     });
   },
   // These tests rely on copying directory trees around.  In general that's not
