@@ -66,10 +66,6 @@ class TestPointer {
   /// Once a pointer is released, it can no longer generate events.
   bool get isDown => _isDown;
   bool _isDown = false;
-  void _setIsDown(bool newValue) {
-    assert(_isDown != newValue);
-    _isDown = newValue;
-  }
 
   /// Whether the pointer simulated by this object currently has
   /// an active pan/zoom gesture.
@@ -105,10 +101,12 @@ class TestPointer {
     }
     switch (event.runtimeType) {
       case PointerDownEvent:
-        _setIsDown(true);
+        assert(!isDown);
+        _isDown = true;
       case PointerUpEvent:
       case PointerCancelEvent:
-        _setIsDown(false);
+        assert(isDown);
+        _isDown = false;
       default:
         break;
     }
@@ -127,8 +125,9 @@ class TestPointer {
     Duration timeStamp = Duration.zero,
     int? buttons,
   }) {
+    assert(!isDown);
     assert(!isPanZoomActive);
-    _setIsDown(true);
+    _isDown = true;
     _location = newLocation;
     if (buttons != null) {
       _buttons = buttons;
@@ -188,7 +187,8 @@ class TestPointer {
   /// The object is no longer usable after this method has been called.
   PointerUpEvent up({ Duration timeStamp = Duration.zero }) {
     assert(!isPanZoomActive);
-    _setIsDown(false);
+    assert(isDown);
+    _isDown = false;
     return PointerUpEvent(
       timeStamp: timeStamp,
       kind: kind,
@@ -205,7 +205,8 @@ class TestPointer {
   ///
   /// The object is no longer usable after this method has been called.
   PointerCancelEvent cancel({ Duration timeStamp = Duration.zero }) {
-    _setIsDown(false);
+    assert(isDown);
+    _isDown = false;
     return PointerCancelEvent(
       timeStamp: timeStamp,
       kind: kind,
@@ -528,7 +529,7 @@ class TestGesture {
   Future<void> moveTo(Offset location, { Duration timeStamp = Duration.zero }) {
     assert(_pointer.kind != PointerDeviceKind.trackpad);
     return TestAsyncUtils.guard<void>(() {
-      if (_pointer.isDown) {
+      if (_pointer._isDown) {
         return _dispatcher(_pointer.move(location, timeStamp: timeStamp));
       } else {
         return _dispatcher(_pointer.hover(location, timeStamp: timeStamp));
@@ -545,9 +546,9 @@ class TestGesture {
         await _dispatcher(_pointer.panZoomEnd(timeStamp: timeStamp));
         assert(!_pointer._isPanZoomActive);
       } else {
-        assert(_pointer.isDown);
+        assert(_pointer._isDown);
         await _dispatcher(_pointer.up(timeStamp: timeStamp));
-        assert(!_pointer.isDown);
+        assert(!_pointer._isDown);
       }
     });
   }
@@ -558,19 +559,19 @@ class TestGesture {
   Future<void> cancel({ Duration timeStamp = Duration.zero }) {
     assert(_pointer.kind != PointerDeviceKind.trackpad, 'Trackpads do not send cancel events.');
     return TestAsyncUtils.guard<void>(() async {
-      assert(_pointer.isDown);
+      assert(_pointer._isDown);
       await _dispatcher(_pointer.cancel(timeStamp: timeStamp));
-      assert(!_pointer.isDown);
+      assert(!_pointer._isDown);
     });
   }
 
   Future<void> forget() {
     return TestAsyncUtils.guard<void>(() async {
       if (_pointer.kind == PointerDeviceKind.trackpad) {
-        if (_pointer._isPanZoomActive) {
+        if (_pointer.isPanZoomActive) {
           await _dispatcher(_pointer.panZoomEnd());
         }
-        assert(!_pointer._isPanZoomActive);
+        assert(!_pointer.isPanZoomActive);
       } else {
         if (_pointer.isDown) {
           await _dispatcher(_pointer.up());
