@@ -22,6 +22,49 @@ class TestDragData {
 }
 
 void main() {
+  List<int>? nextPointerLog;
+
+  Future<List<int>> logNextPointers(WidgetTester tester) async {
+    final List<int> results = <int>[];
+    results.add(tester.nextPointer);
+    await tester.createGesture();
+
+    results.add(tester.nextPointer);
+    final TestGesture gesture = await tester.startGesture(Offset.zero);
+    addTearDown(gesture.cancel);
+
+    results.add(tester.nextPointer);
+    await tester.flingFrom(Offset.zero, const Offset(100.0, 0.0), 400.0);
+
+    results.add(tester.nextPointer);
+    await tester.trackpadFlingFrom(Offset.zero, const Offset(100.0, 0.0), 400.0);
+
+    results.add(tester.nextPointer);
+    await tester.timedDragFrom(
+      Offset.zero, const Offset(100.0, 0.0), const Duration(milliseconds: 250));
+
+    results.add(tester.nextPointer);
+    return results;
+  }
+
+  testWidgets('WidgetTester.nextPointer is free of state leak, part 1', (WidgetTester tester) async {
+    final List<int> log = await logNextPointers(tester);
+    if (nextPointerLog == null) {
+      nextPointerLog = log;
+    } else {
+      expect(log, nextPointerLog);
+    }
+  });
+
+  testWidgets('WidgetTester.nextPointer is free of state leak, part 2', (WidgetTester tester) async {
+    final List<int> log = await logNextPointers(tester);
+    if (nextPointerLog == null) {
+      nextPointerLog = log;
+    } else {
+      expect(log, nextPointerLog);
+    }
+  });
+
   testWidgets(
     'WidgetTester.drag must break the offset into multiple parallel components if '
     'the drag goes outside the touch slop values',
