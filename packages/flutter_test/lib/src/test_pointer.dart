@@ -537,8 +537,12 @@ class TestGesture {
     });
   }
 
-  /// End the gesture by releasing the pointer. For trackpad pointers this
-  /// will send a panZoomEnd event instead of an up event.
+  /// End the gesture by releasing the pointer.
+  ///
+  /// For trackpad pointers, this will send a pan/zoom end event.
+  /// For other pointers, this will send an up event.
+  ///
+  /// See also [cancel] and [forget].
   Future<void> up({ Duration timeStamp = Duration.zero }) {
     return TestAsyncUtils.guard<void>(() async {
       if (_pointer.kind == PointerDeviceKind.trackpad) {
@@ -556,12 +560,40 @@ class TestGesture {
   /// End the gesture by canceling the pointer (as would happen if the
   /// system showed a modal dialog on top of the Flutter application,
   /// for instance).
+  ///
+  /// See also [up] and [forget].
   Future<void> cancel({ Duration timeStamp = Duration.zero }) {
     assert(_pointer.kind != PointerDeviceKind.trackpad, 'Trackpads do not send cancel events.');
     return TestAsyncUtils.guard<void>(() async {
       assert(_pointer._isDown);
       await _dispatcher(_pointer.cancel(timeStamp: timeStamp));
       assert(!_pointer._isDown);
+    });
+  }
+
+  /// End the gesture by releasing the pointer, if still active.
+  ///
+  /// For trackpad pointers, this will send a pan/zoom end event.
+  /// For other pointers, this will send an up event.
+  ///
+  /// If the pointer has already been released, then this method
+  /// has no effect.  As a result it can safely be called unconditionally
+  /// to clean up state at the end of a test.
+  ///
+  /// See also [up] and [cancel].
+  Future<void> forget() {
+    return TestAsyncUtils.guard<void>(() async {
+      if (_pointer.kind == PointerDeviceKind.trackpad) {
+        if (_pointer.isPanZoomActive) {
+          await _dispatcher(_pointer.panZoomEnd());
+        }
+        assert(!_pointer.isPanZoomActive);
+      } else {
+        if (_pointer.isDown) {
+          await _dispatcher(_pointer.up());
+        }
+        assert(!_pointer.isDown);
+      }
     });
   }
 

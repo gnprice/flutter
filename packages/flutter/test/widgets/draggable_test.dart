@@ -19,6 +19,7 @@ import 'semantics_tester.dart';
 
 void main() {
   testWidgets('Drag and drop - control test', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     int dragStartedCount = 0;
@@ -94,6 +95,7 @@ void main() {
 
   // Regression test for https://github.com/flutter/flutter/issues/76825
   testWidgets('Drag and drop - onLeave callback fires correctly with generic parameter', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final Map<String,int> leftBehind = <String,int>{
       'Target 1': 0,
       'Target 2': 0,
@@ -169,6 +171,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onLeave callback fires correctly', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final Map<String,int> leftBehind = <String,int>{
       'Target 1': 0,
       'Target 2': 0,
@@ -245,6 +248,7 @@ void main() {
 
   // Regression test for https://github.com/flutter/flutter/issues/76825
   testWidgets('Drag and drop - onMove callback fires correctly with generic parameter', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final Map<String,int> targetMoveCount = <String,int>{
       'Target 1': 0,
       'Target 2': 0,
@@ -318,6 +322,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onMove callback fires correctly', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final Map<String,int> targetMoveCount = <String,int>{
       'Target 1': 0,
       'Target 2': 0,
@@ -395,6 +400,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - dragging over button', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation;
 
@@ -488,6 +494,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - tapping button', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation;
 
@@ -545,6 +552,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - long press draggable, short press', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation;
 
@@ -594,6 +602,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - long press draggable, long press', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation;
 
@@ -645,6 +654,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - horizontal and vertical draggables in vertical block', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation, thirdLocation;
 
@@ -755,6 +765,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - horizontal and vertical draggables in horizontal block', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation, thirdLocation;
 
@@ -913,7 +924,9 @@ void main() {
         ),
       );
     }
+
     testWidgets('Null axis draggable moves along all axes', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
       final Offset firstLocation = tester.getTopLeft(find.text('N'));
       final Offset secondLocation = firstLocation + const Offset(300.0, 300.0);
@@ -929,6 +942,7 @@ void main() {
     });
 
     testWidgets('Horizontal axis draggable moves horizontally', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
       final Offset firstLocation = tester.getTopLeft(find.text('H'));
       final Offset secondLocation = firstLocation + const Offset(300.0, 0.0);
@@ -944,6 +958,7 @@ void main() {
     });
 
     testWidgets('Horizontal axis draggable does not move vertically', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
       final Offset firstLocation = tester.getTopLeft(find.text('H'));
       final Offset secondDragLocation = firstLocation + const Offset(300.0, 200.0);
@@ -962,6 +977,7 @@ void main() {
     });
 
     testWidgets('Vertical axis draggable moves vertically', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
       final Offset firstLocation = tester.getTopLeft(find.text('V'));
       final Offset secondLocation = firstLocation + const Offset(0.0, 300.0);
@@ -977,6 +993,7 @@ void main() {
     });
 
     testWidgets('Vertical axis draggable does not move horizontally', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
       final Offset firstLocation = tester.getTopLeft(find.text('V'));
       final Offset secondDragLocation = firstLocation + const Offset(200.0, 300.0);
@@ -1043,6 +1060,7 @@ void main() {
     }
 
     testWidgets('Null axis onDragUpdate called only if draggable moves in any direction', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
 
       expect(updated, 0);
@@ -1078,6 +1096,7 @@ void main() {
     });
 
     testWidgets('Vertical axis onDragUpdate only called if draggable moves vertical', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
 
       expect(updated, 0);
@@ -1113,6 +1132,7 @@ void main() {
     });
 
     testWidgets('Horizontal axis onDragUpdate only called if draggable moves horizontal', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       await tester.pumpWidget(build());
 
       expect(updated, 0);
@@ -1149,6 +1169,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDraggableCanceled not called if dropped on accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDraggableCanceledCalled = false;
@@ -1217,6 +1238,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDraggableCanceled called if dropped on non-accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDraggableCanceledCalled = false;
@@ -1294,6 +1316,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDraggableCanceled called if dropped on non-accepting target with correct velocity', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDraggableCanceledCalled = false;
@@ -1346,6 +1369,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDragEnd not called if dropped on non-accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDragEndCalled = false;
@@ -1422,6 +1446,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - DragTarget rebuilds with and without rejected data when a rejected draggable enters and leaves', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await tester.pumpWidget(MaterialApp(
       home: Column(
         children: <Widget>[
@@ -1476,6 +1501,7 @@ void main() {
 
 
   testWidgets('Drag and drop - Can drag and drop over a non-accepting target multiple times', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     int numberOfTimesOnDraggableCanceledCalled = 0;
     await tester.pumpWidget(MaterialApp(
       home: Column(
@@ -1558,6 +1584,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDragCompleted not called if dropped on non-accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDragCompletedCalled = false;
@@ -1629,6 +1656,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDragEnd called if dropped on accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDragEndCalled = false;
@@ -1705,6 +1733,7 @@ void main() {
   });
 
   testWidgets('DragTarget does not call onDragEnd when remove from the tree', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation;
     int timesOnDragEndCalled = 0;
@@ -1771,6 +1800,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - onDragCompleted called if dropped on accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDragCompletedCalled = false;
@@ -1839,6 +1869,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - allow pass through of unaccepted data test', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> acceptedInts = <int>[];
     final List<DragTargetDetails<int>> acceptedIntsDetails = <DragTargetDetails<int>>[];
     final List<double> acceptedDoubles = <double>[];
@@ -1973,6 +2004,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - allow pass through of unaccepted data twice test', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<DragTargetData> acceptedDragTargetDatas = <DragTargetData>[];
     final List<DragTargetDetails<DragTargetData>> acceptedDragTargetDataDetails = <DragTargetDetails<DragTargetData>>[];
     final List<ExtendedDragTargetData> acceptedExtendedDragTargetDatas = <ExtendedDragTargetData>[];
@@ -2041,6 +2073,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - maxSimultaneousDrags', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
 
@@ -2168,6 +2201,7 @@ void main() {
   });
 
   testWidgets('Draggable disposes recognizer', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool didTap = false;
     await tester.pumpWidget(
       Directionality(
@@ -2207,6 +2241,7 @@ void main() {
 
   // Regression test for https://github.com/flutter/flutter/issues/6128.
   testWidgets('Draggable plays nice with onTap', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.ltr,
@@ -2240,6 +2275,7 @@ void main() {
   });
 
   testWidgets('DragTarget does not set state when remove from the tree', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
     Offset firstLocation, secondLocation;
 
@@ -2302,6 +2338,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - remove draggable', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
 
@@ -2382,6 +2419,7 @@ void main() {
   });
 
   testWidgets('Tap above long-press draggable works', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<String> events = <String>[];
 
     await tester.pumpWidget(MaterialApp(
@@ -2406,6 +2444,7 @@ void main() {
   });
 
   testWidgets('long-press draggable calls onDragEnd called if dropped on accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDragEndCalled = false;
@@ -2493,6 +2532,7 @@ void main() {
   });
 
   testWidgets('long-press draggable calls onDragCompleted called if dropped on accepting target', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     final List<DragTargetDetails<int>> acceptedDetails = <DragTargetDetails<int>>[];
     bool onDragCompletedCalled = false;
@@ -2569,6 +2609,7 @@ void main() {
   });
 
   testWidgets('long-press draggable calls onDragStartedCalled after long press', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool onDragStartedCalled = false;
 
     await tester.pumpWidget(MaterialApp(
@@ -2602,6 +2643,7 @@ void main() {
   });
 
   testWidgets('Custom long press delay for LongPressDraggable', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool onDragStartedCalled = false;
     await tester.pumpWidget(MaterialApp(
       home: LongPressDraggable<int>(
@@ -2636,6 +2678,7 @@ void main() {
   });
 
   testWidgets('Default long press delay for LongPressDraggable', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool onDragStartedCalled = false;
     await tester.pumpWidget(MaterialApp(
       home: LongPressDraggable<int>(
@@ -2669,22 +2712,27 @@ void main() {
   });
 
   testWidgets('long-press draggable calls Haptic Feedback onStart', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await _testLongPressDraggableHapticFeedback(tester: tester, hapticFeedbackOnStart: true, expectedHapticFeedbackCount: 1);
   });
 
   testWidgets('long-press draggable can disable Haptic Feedback', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await _testLongPressDraggableHapticFeedback(tester: tester, hapticFeedbackOnStart: false, expectedHapticFeedbackCount: 0);
   });
 
   testWidgets('Drag feedback with child anchor positions correctly', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await _testChildAnchorFeedbackPosition(tester: tester);
   });
 
   testWidgets('Drag feedback with child anchor within a non-global Overlay positions correctly', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await _testChildAnchorFeedbackPosition(tester: tester, left: 100.0, top: 100.0);
   });
 
   testWidgets('Drag feedback is put on root overlay with [rootOverlay] flag', (WidgetTester tester) async {
+      addTearDown(tester.cancelGestures);
       final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
       final GlobalKey<NavigatorState> childNavigatorKey = GlobalKey<NavigatorState>();
       // Create a [MaterialApp], with a nested [Navigator], which has the
@@ -2753,6 +2801,7 @@ void main() {
 
   // Regression test for https://github.com/flutter/flutter/issues/72483
   testWidgets('Drag and drop - DragTarget<Object> can accept Draggable<int> data', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<Object> accepted = <Object>[];
     await tester.pumpWidget(MaterialApp(
       home: Column(
@@ -2789,6 +2838,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - DragTarget<int> can accept Draggable<Object> data when runtime type is int', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     await tester.pumpWidget(MaterialApp(
       home: Column(
@@ -2825,6 +2875,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - DragTarget<int> should not accept Draggable<Object> data when runtime type null', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final List<int> accepted = <int>[];
     bool isReceiveNullDataForCheck = false;
     await tester.pumpWidget(MaterialApp(
@@ -2868,6 +2919,7 @@ void main() {
   });
 
   testWidgets('Drag and drop can contribute semantics', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     final SemanticsTester semantics = SemanticsTester(tester);
     await tester.pumpWidget(MaterialApp(
         home: ListView(
@@ -3034,6 +3086,7 @@ void main() {
   });
 
   testWidgets('Drag and drop - when a dragAnchorStrategy is provided it gets called', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool dragAnchorStrategyCalled = false;
 
     await tester.pumpWidget(MaterialApp(
@@ -3058,6 +3111,7 @@ void main() {
   });
 
   testWidgets('configurable Draggable hit test behavior', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     const HitTestBehavior hitTestBehavior = HitTestBehavior.deferToChild;
 
     await tester.pumpWidget(
@@ -3078,6 +3132,7 @@ void main() {
 
   // Regression test for https://github.com/flutter/flutter/issues/92083
   testWidgets('feedback respect the MouseRegion cursor configure', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     await tester.pumpWidget(
       const MaterialApp(
         home: Column(
@@ -3106,6 +3161,7 @@ void main() {
   });
 
   testWidgets('configurable feedback ignore pointer behavior', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool onTap = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -3135,6 +3191,7 @@ void main() {
   });
 
   testWidgets('configurable feedback ignore pointer behavior - LongPressDraggable', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     bool onTap = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -3166,6 +3223,7 @@ void main() {
   });
 
   testWidgets('configurable DragTarget hit test behavior', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     const HitTestBehavior hitTestBehavior = HitTestBehavior.deferToChild;
 
     await tester.pumpWidget(
@@ -3187,6 +3245,7 @@ void main() {
   });
 
   testWidgets('LongPressDraggable.dragAnchorStrategy', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     const Widget widget1 = Placeholder(key: ValueKey<int>(1));
     const Widget widget2 = Placeholder(key: ValueKey<int>(2));
     Offset dummyStrategy(Draggable<Object> draggable, BuildContext context, Offset position) => Offset.zero;
@@ -3197,6 +3256,7 @@ void main() {
   });
 
   testWidgets('Test allowedButtonsFilter', (WidgetTester tester) async {
+    addTearDown(tester.cancelGestures);
     Widget build(bool Function(int buttons)? allowedButtonsFilter) {
       return MaterialApp(
         home: Draggable<int>(
