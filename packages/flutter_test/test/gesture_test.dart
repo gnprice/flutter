@@ -17,7 +17,7 @@ void main() {
                 onTap: () {},
                 child: const SizedBox.shrink(),
               ),
-              child: const SizedBox(height: 50.0, child: Text('Target')),
+              child: const Text('Target'),
             ),
           ],
         ),
