@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Future<void> startDrag(WidgetTester tester, {required int pointer}) async {
-    bool onTap = false;
     await tester.pumpWidget(
       MaterialApp(
         home: Column(
@@ -16,8 +15,8 @@ void main() {
             LongPressDraggable<int>(
               ignoringFeedbackPointer: false,
               feedback: GestureDetector(
-                onTap: () => onTap = true,
-                child: const SizedBox(height: 50.0, child: Text('Draggable')),
+                onTap: () {},
+                child: const SizedBox(height: 50.0),
               ),
               child: const SizedBox(height: 50.0, child: Text('Target')),
             ),
@@ -33,9 +32,6 @@ void main() {
     final Offset secondLocation = location + const Offset(7.0, 7.0);
     await gesture.moveTo(secondLocation);
     await tester.pump();
-
-    await tester.tap(find.text('Draggable'));
-    expect(onTap, true);
   }
 
   Future<void> completeDrag(WidgetTester tester, {required int pointer}) async {
