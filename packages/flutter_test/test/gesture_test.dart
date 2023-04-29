@@ -41,7 +41,7 @@ void main() {
           const Draggable<int>(data: 1, feedback: SizedBox.shrink(), child: Text('Source')),
           DragTarget<int>(
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
-              return const SizedBox(height: 100.0, child: Text('Target'));
+              return const Text('Target');
             },
             onAccept: (int data) {},
           ),
