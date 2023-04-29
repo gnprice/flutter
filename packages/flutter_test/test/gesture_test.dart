@@ -49,11 +49,7 @@ void main() {
 
     final TestGesture gesture = await tester.startGesture(
       pointer: pointer, tester.getCenter(find.text('Source')));
-    await tester.pump();
-
     await gesture.moveTo(tester.getCenter(find.text('Target')));
-    await tester.pump();
-
     await gesture.up();
   }
 
