@@ -9,11 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('No gesture state leak in draggables', () {
     Future<void> startDrag(WidgetTester tester, {required int pointer}) async {
-      await tester.pumpWidget(MaterialApp(home: Column(children: <Widget>[
-        Draggable<int>(
-          feedback: GestureDetector(onTap: () {}, child: const SizedBox.shrink()),
-          child: const Text('Target'),
-        ),
+      await tester.pumpWidget(const MaterialApp(home: Column(children: <Widget>[
+        Draggable<int>(feedback: SizedBox.shrink(), child: Text('Target')),
       ])));
 
       await tester.startGesture(pointer: pointer, tester.getCenter(find.text('Target')));
