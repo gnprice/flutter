@@ -15,7 +15,7 @@ void main() {
             LongPressDraggable<int>(
               feedback: GestureDetector(
                 onTap: () {},
-                child: const SizedBox(height: 50.0),
+                child: const SizedBox.shrink(),
               ),
               child: const SizedBox(height: 50.0, child: Text('Target')),
             ),
