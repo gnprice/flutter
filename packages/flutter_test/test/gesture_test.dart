@@ -26,7 +26,7 @@ void main() {
     );
 
     final Offset location = tester.getCenter(find.text('Target'));
-    final TestGesture gesture = await tester.startGesture(location, pointer: pointer);
+    await tester.startGesture(location, pointer: pointer);
     await tester.pump(kLongPressTimeout);
   }
 
