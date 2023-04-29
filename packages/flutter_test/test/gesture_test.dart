@@ -62,7 +62,6 @@ void main() {
     await tester.pump();
 
     await gesture.up();
-    await tester.pump();
   }
 
   testWidgets('Start drag vs. complete drag, side A', (WidgetTester tester) async {
