@@ -10,14 +10,13 @@ void main() {
   group('No gesture state leak in draggables', () {
     Future<void> startDrag(WidgetTester tester, {required int pointer}) async {
       await tester.pumpWidget(MaterialApp(home: Column(children: <Widget>[
-        LongPressDraggable<int>(
+        Draggable<int>(
           feedback: GestureDetector(onTap: () {}, child: const SizedBox.shrink()),
           child: const Text('Target'),
         ),
       ])));
 
       await tester.startGesture(pointer: pointer, tester.getCenter(find.text('Target')));
-      await tester.pump(kLongPressTimeout);
       // Leave the pointer still down at the end of the test.  This causes what
       // would be a state leak if the tester didn't automatically clean it up.
     }
