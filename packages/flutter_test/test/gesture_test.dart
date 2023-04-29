@@ -18,8 +18,8 @@ void main() {
 
       await tester.startGesture(pointer: pointer, tester.getCenter(find.text('Target')));
       await tester.pump(kLongPressTimeout);
-      // Then don't end the gesture.  This would cause a state leak
-      // if the tester didn't automatically clean it up.
+      // Leave the pointer still down at the end of the test.  This causes what
+      // would be a state leak if the tester didn't automatically clean it up.
     }
 
     Future<void> completeDrag(WidgetTester tester, {required int pointer}) async {
@@ -39,6 +39,7 @@ void main() {
 
     // Logically these tests consist of startDrag in one test,
     // then completeDrag in the other, on the same pointer.
+    // Using two pointers makes the tests effective in either order.
 
     testWidgets('side A', (WidgetTester tester) async {
       await startDrag(tester, pointer: 7);
@@ -46,8 +47,8 @@ void main() {
     });
 
     testWidgets('side B', (WidgetTester tester) async {
-      await startDrag(tester, pointer: 8);
       await completeDrag(tester, pointer: 7);
+      await startDrag(tester, pointer: 8);
     });
   });
 }
