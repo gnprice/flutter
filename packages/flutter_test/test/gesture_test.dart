@@ -28,7 +28,6 @@ void main() {
     final Offset location = tester.getCenter(find.text('Target'));
     final TestGesture gesture = await tester.startGesture(location, pointer: pointer);
     await tester.pump(kLongPressTimeout);
-    await gesture.moveTo(location + const Offset(7.0, 7.0));
   }
 
   Future<void> completeDrag(WidgetTester tester, {required int pointer}) async {
