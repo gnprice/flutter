@@ -2,57 +2,85 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Drag and drop 1', (WidgetTester tester) async {
-    bool dragAnchorStrategyCalled = false;
+  Future<void> startDrag(WidgetTester tester, {required int pointer}) async {
+    bool onTap = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Column(
+          children: <Widget>[
+            LongPressDraggable<int>(
+              ignoringFeedbackPointer: false,
+              feedback: GestureDetector(
+                onTap: () => onTap = true,
+                child: const SizedBox(height: 50.0, child: Text('Draggable')),
+              ),
+              child: const SizedBox(height: 50.0, child: Text('Target')),
+            ),
+          ],
+        ),
+      ),
+    );
 
+    final Offset location = tester.getCenter(find.text('Target'));
+    final TestGesture gesture = await tester.startGesture(location, pointer: pointer);
+    await tester.pump(kLongPressTimeout);
+
+    final Offset secondLocation = location + const Offset(7.0, 7.0);
+    await gesture.moveTo(secondLocation);
+    await tester.pump();
+
+    await tester.tap(find.text('Draggable'));
+    expect(onTap, true);
+  }
+
+  Future<void> completeDrag(WidgetTester tester, {required int pointer}) async {
+    final List<int> accepted = <int>[];
     await tester.pumpWidget(MaterialApp(
       home: Column(
         children: <Widget>[
-          Draggable<int>(
-            feedback: const Text('Feedback'),
-            dragAnchorStrategy: (Draggable<Object> widget, BuildContext context, Offset position) {
-              dragAnchorStrategyCalled = true;
-              return Offset.zero;
+          const Draggable<Object>(
+            data: 1,
+            feedback: Text('Dragging'),
+            child: Text('Source'),
+          ),
+          DragTarget<int>(
+            builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
+              return const SizedBox(height: 100.0, child: Text('Target'));
             },
-            child: const Text('Source'),
+            onAccept: accepted.add,
           ),
         ],
       ),
     ));
 
-    final Offset location = tester.getCenter(find.text('Source'));
-    await tester.startGesture(location, pointer: 7);
+    expect(accepted, isEmpty);
 
-    expect(dragAnchorStrategyCalled, true);
+    final Offset firstLocation = tester.getCenter(find.text('Source'));
+    final TestGesture gesture = await tester.startGesture(firstLocation, pointer: pointer);
+    await tester.pump();
+
+    final Offset secondLocation = tester.getCenter(find.text('Target'));
+    await gesture.moveTo(secondLocation);
+    await tester.pump();
+
+    await gesture.up();
+    await tester.pump();
+
+    expect(accepted, equals(<int>[1]));
+  }
+
+  testWidgets('Start drag vs. complete drag, side A', (WidgetTester tester) async {
+    await startDrag(tester, pointer: 7);
+    await completeDrag(tester, pointer: 8);
   });
 
-  testWidgets('Drag and drop 2', (WidgetTester tester) async {
-    bool dragAnchorStrategyCalled = false;
-
-    await tester.pumpWidget(MaterialApp(
-      home: Column(
-        children: <Widget>[
-          Draggable<int>(
-            feedback: const Text('Feedback'),
-            dragAnchorStrategy: (Draggable<Object> widget, BuildContext context, Offset position) {
-              dragAnchorStrategyCalled = true;
-              return Offset.zero;
-            },
-            child: const Text('Source'),
-          ),
-        ],
-      ),
-    ));
-
-    final Offset location = tester.getCenter(find.text('Source'));
-    await tester.startGesture(location, pointer: 7);
-
-    expect(dragAnchorStrategyCalled, true);
+  testWidgets('Start drag vs. complete drag, side B', (WidgetTester tester) async {
+    await startDrag(tester, pointer: 8);
+    await completeDrag(tester, pointer: 7);
   });
-
 }
