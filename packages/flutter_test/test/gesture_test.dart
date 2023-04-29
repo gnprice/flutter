@@ -13,10 +13,7 @@ void main() {
         home: Column(
           children: <Widget>[
             LongPressDraggable<int>(
-              feedback: GestureDetector(
-                onTap: () {},
-                child: const SizedBox.shrink(),
-              ),
+              feedback: GestureDetector(onTap: () {}, child: const SizedBox.shrink()),
               child: const Text('Target'),
             ),
           ],
