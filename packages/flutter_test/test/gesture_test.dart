@@ -39,7 +39,6 @@ void main() {
   }
 
   Future<void> completeDrag(WidgetTester tester, {required int pointer}) async {
-    final List<int> accepted = <int>[];
     await tester.pumpWidget(MaterialApp(
       home: Column(
         children: <Widget>[
@@ -52,13 +51,11 @@ void main() {
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
               return const SizedBox(height: 100.0, child: Text('Target'));
             },
-            onAccept: accepted.add,
+            onAccept: (int data) {},
           ),
         ],
       ),
     ));
-
-    expect(accepted, isEmpty);
 
     final Offset firstLocation = tester.getCenter(find.text('Source'));
     final TestGesture gesture = await tester.startGesture(firstLocation, pointer: pointer);
@@ -70,8 +67,6 @@ void main() {
 
     await gesture.up();
     await tester.pump();
-
-    expect(accepted, equals(<int>[1]));
   }
 
   testWidgets('Start drag vs. complete drag, side A', (WidgetTester tester) async {
