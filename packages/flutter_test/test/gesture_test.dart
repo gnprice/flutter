@@ -38,11 +38,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Column(
         children: <Widget>[
-          const Draggable<Object>(
-            data: 1,
-            feedback: Text('Dragging'),
-            child: Text('Source'),
-          ),
+          const Draggable<int>(data: 1, feedback: SizedBox.shrink(), child: Text('Source')),
           DragTarget<int>(
             builder: (BuildContext context, List<int?> data, List<dynamic> rejects) {
               return const SizedBox(height: 100.0, child: Text('Target'));
