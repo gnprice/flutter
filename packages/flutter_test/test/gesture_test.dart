@@ -53,12 +53,11 @@ void main() {
       ),
     ));
 
-    final Offset firstLocation = tester.getCenter(find.text('Source'));
-    final TestGesture gesture = await tester.startGesture(firstLocation, pointer: pointer);
+    final TestGesture gesture = await tester.startGesture(
+      pointer: pointer, tester.getCenter(find.text('Source')));
     await tester.pump();
 
-    final Offset secondLocation = tester.getCenter(find.text('Target'));
-    await gesture.moveTo(secondLocation);
+    await gesture.moveTo(tester.getCenter(find.text('Target')));
     await tester.pump();
 
     await gesture.up();
