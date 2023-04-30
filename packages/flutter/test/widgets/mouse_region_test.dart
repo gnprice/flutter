@@ -1842,6 +1842,7 @@ void main() {
       textFieldPos,
       kind: PointerDeviceKind.mouse,
     );
+    addTearDown(gesture.up);
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
 
