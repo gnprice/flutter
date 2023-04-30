@@ -314,12 +314,14 @@ abstract class MultiDragGestureRecognizer extends GestureRecognizer {
       return;
     }
     assert(_pointers!.containsKey(pointer));
+    print('removeState $this');
     GestureBinding.instance.pointerRouter.removeRoute(pointer, _handleEvent);
     _pointers!.remove(pointer)!.dispose();
   }
 
   @override
   void dispose() {
+    print('multidrag dispose');
     _pointers!.keys.toList().forEach(_removeState);
     assert(_pointers!.isEmpty);
     _pointers = null;
