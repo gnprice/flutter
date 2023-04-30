@@ -10,20 +10,22 @@ void main() {
   group('No gesture state leak in draggables', () {
     Future<void> startDrag(WidgetTester tester, {required int pointer}) async {
       await tester.pumpWidget(const MaterialApp(home: Column(children: <Widget>[
-        Draggable<int>(feedback: SizedBox.shrink(), child: Text('Target')),
+        Draggable<String>(data: 'before', feedback: SizedBox.shrink(), child: Text('Target')),
       ])));
 
       await tester.startGesture(pointer: pointer, tester.getCenter(find.text('Target')));
-      // Leave the pointer still down at the end of the test.  This causes what
-      // would be a state leak if the tester didn't automatically clean it up.
+      // Leave the pointer still down at the end of the test, so that the
+      // drag gesture recognizer stays active.  This would be a state leak
+      // if the tester didn't automatically clean it up.
     }
 
     Future<void> completeDrag(WidgetTester tester, {required int pointer}) async {
+      final List<String> results = <String>[];
       await tester.pumpWidget(MaterialApp(home: Column(children: <Widget>[
-        const Draggable<int>(data: 1, feedback: SizedBox.shrink(), child: Text('Source')),
-        DragTarget<int>(
-          builder: (BuildContext _, List<int?> __, List<dynamic> ___) => const Text('Target'),
-          onAccept: (int data) {},
+        const Draggable<String>(data: 'after', feedback: SizedBox.shrink(), child: Text('Source')),
+        DragTarget<String>(
+          onAccept: results.add,
+          builder: (BuildContext _, List<String?> __, List<dynamic> ___) => const Text('Target'),
         ),
       ])));
 
@@ -31,6 +33,8 @@ void main() {
           pointer: pointer, tester.getCenter(find.text('Source')));
       await gesture.moveTo(tester.getCenter(find.text('Target')));
       await gesture.up();
+
+      expect(results, ['after']);
     }
 
     // Logically these tests consist of startDrag in one test,
