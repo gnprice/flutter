@@ -1498,15 +1498,7 @@ void main() {
           return SizedBox(
             key: ValueKey<int>(items[index]),
             height: 100,
-            child: ReorderableDragStartListener(
-              index: index,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('item ${items[index]}'),
-                ],
-              ),
-            ),
+            child: Text('item ${items[index]}'),
           );
         },
         itemCount: items.length,
@@ -1517,7 +1509,7 @@ void main() {
     // Drag item 0 downwards and force an auto scroll off the end of the list
     // far enough that item zeros original entry in the list is unmounted.
     final TestGesture drag = await tester.startGesture(tester.getCenter(find.text('item 0')));
-    await tester.pump(kPressTimeout);
+    await tester.pump(kLongPressTimeout);
     // Off the bottom of the screen, which should autoscroll until we hit the
     // end of the list
     await drag.moveBy(const Offset(0, 700));
@@ -1564,15 +1556,7 @@ void main() {
           return SizedBox(
             key: ValueKey<int>(items[index]),
             height: 100,
-            child: ReorderableDragStartListener(
-              index: index,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('item ${items[index]}'),
-                ],
-              ),
-            ),
+            child: Text('item ${items[index]}'),
           );
         },
         itemCount: items.length,
@@ -1587,7 +1571,7 @@ void main() {
     ));
 
     TestGesture drag = await tester.startGesture(tester.getCenter(item0));
-    await tester.pump(kPressTimeout);
+    await tester.pump(kLongPressTimeout);
     // Drag enough for move to start.
     await drag.moveBy(const Offset(0, 20));
 
@@ -1606,7 +1590,7 @@ void main() {
     endIndex = null;
 
     drag = await tester.startGesture(tester.getCenter(item0));
-    await tester.pump(kPressTimeout);
+    await tester.pump(kLongPressTimeout);
     // Drag enough for move to start.
     await drag.moveBy(const Offset(0, 20));
 
@@ -1807,16 +1791,7 @@ void main() {
                 key: ValueKey<int>(items[index]),
                 height: 100,
                 color: items[index].isOdd ? Colors.red : Colors.green,
-                child: ReorderableDragStartListener(
-                  index: index,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('item ${items[index]}'),
-                      const Icon(Icons.drag_handle),
-                    ],
-                  ),
-                ),
+                child: Text('item ${items[index]}'),
               );
             },
             itemCount: items.length,
@@ -1831,6 +1806,7 @@ void main() {
 
       final Finder item = find.text('item 0');
       final TestGesture drag = await tester.startGesture(tester.getCenter(item));
+      await pumpFor(duration: kLongPressTimeout);
 
       // Drag just enough to touch the edge but not surpass it, so the
       // auto scroller is not yet triggered
