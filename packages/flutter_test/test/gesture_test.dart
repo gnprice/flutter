@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('No gesture state leak in draggables', () {
+  group('No gesture state leak via Draggable', () {
     Future<void> startDrag(WidgetTester tester, {required int pointer}) async {
       await tester.pumpWidget(const MaterialApp(home: Column(children: <Widget>[
-        Draggable<String>(data: 'before', feedback: SizedBox.shrink(), child: Text('Target')),
+        Draggable<String>(data: 'before', feedback: SizedBox.shrink(), child: Text('Source')),
       ])));
 
-      await tester.startGesture(pointer: pointer, tester.getCenter(find.text('Target')));
+      await tester.startGesture(pointer: pointer, tester.getCenter(find.text('Source')));
       // Leave the pointer still down at the end of the test, so that the
       // drag gesture recognizer stays active.  This would be a state leak
       // if the tester didn't automatically clean it up.
