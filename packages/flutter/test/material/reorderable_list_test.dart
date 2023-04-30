@@ -1668,12 +1668,9 @@ void main() {
     expect(() => ReorderableListView.builder(
       itemBuilder: (BuildContext context, int index) {
         return SizedBox(
-            key: ValueKey<int>(numbers[index]),
-            height: 20 + numbers[index] * 10,
-            child: ReorderableDragStartListener(
-              index: index,
-              child: Text(numbers[index].toString()),
-            )
+          key: ValueKey<int>(numbers[index]),
+          height: 20 + numbers[index] * 10,
+          child: Text(numbers[index].toString()),
         );
       },
       itemCount: numbers.length,
@@ -1694,13 +1691,10 @@ void main() {
                 return ReorderableListView.builder(
                   itemBuilder: (BuildContext context, int index) {
                     return SizedBox(
-                        key: ValueKey<int>(numbers[index]),
-                        // children with different heights
-                        height: 20 + numbers[index] * 10,
-                        child: ReorderableDragStartListener(
-                          index: index,
-                          child: Text(numbers[index].toString()),
-                        )
+                      key: ValueKey<int>(numbers[index]),
+                      // children with different heights
+                      height: 20 + numbers[index] * 10,
+                      child: Text(numbers[index].toString()),
                     );
                   },
                   itemCount: numbers.length,
@@ -1733,13 +1727,10 @@ void main() {
                 return ReorderableListView.builder(
                   itemBuilder: (BuildContext context, int index) {
                     return SizedBox(
-                        key: ValueKey<int>(numbers[index]),
-                        // children with different heights
-                        height: 20 + numbers[index] * 10,
-                        child: ReorderableDragStartListener(
-                          index: index,
-                          child: Text(numbers[index].toString()),
-                        )
+                      key: ValueKey<int>(numbers[index]),
+                      // children with different heights
+                      height: 20 + numbers[index] * 10,
+                      child: Text(numbers[index].toString()),
                     );
                   },
                   itemCount: numbers.length,
