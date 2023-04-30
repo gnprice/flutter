@@ -646,11 +646,7 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
 
   @override
   void dispose() {
-    print('dispose: $_recognizer');
     _dragReset();
-    print('  -> $_recognizer');
-    _recognizer?.dispose();
-    _recognizer = null;
     super.dispose();
   }
 
@@ -682,7 +678,6 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
 
       if (_items.containsKey(index)) {
         _dragIndex = index;
-        print('starting recognizer $recognizer\n  state $this');
         _recognizer = recognizer
           ..onStart = _dragStart
           ..addPointer(event);
