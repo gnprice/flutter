@@ -33,6 +33,8 @@ class PointerRouter {
     );
     assert(!routes.containsKey(route));
     routes[route] = transform;
+    print('addRoute $pointer -> ${_routeMap[pointer]}');
+    print(StackTrace.current);
   }
 
   /// Removes a route from the routing table.
@@ -50,6 +52,7 @@ class PointerRouter {
     if (routes.isEmpty) {
       _routeMap.remove(pointer);
     }
+    print('removeRoute $pointer -> ${_routeMap[pointer]}');
   }
 
   /// Adds a route to the global entry in the routing table.
@@ -122,6 +125,7 @@ class PointerRouter {
   /// PointerRouter object.
   void route(PointerEvent event) {
     final Map<PointerRoute, Matrix4?>? routes = _routeMap[event.pointer];
+    print('route ${event.pointer} -> ${_routeMap[event.pointer]}');
     final Map<PointerRoute, Matrix4?> copiedGlobalRoutes = Map<PointerRoute, Matrix4?>.of(_globalRoutes);
     if (routes != null) {
       _dispatchEventToRoutes(
