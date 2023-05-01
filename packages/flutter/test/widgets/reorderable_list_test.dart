@@ -285,7 +285,7 @@ void main() {
     expect(routeCount(1), 0);
     final TestGesture drag = await tester.startGesture(pointer: 1, tester.getCenter(find.text('item 1')));
     expect(routeCount(1), greaterThan(0));
-    await tester.pump(kLongPressTimeout);
+    await tester.pump(kPressTimeout);
 
     await drag.moveBy(const Offset(0, 100));
     await tester.pumpAndSettle();
