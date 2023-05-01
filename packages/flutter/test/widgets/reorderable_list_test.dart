@@ -265,12 +265,7 @@ void main() {
               height: 100,
               child: ReorderableDragStartListener(
                 index: index,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('item ${items[index]}'),
-                  ],
-                ),
+                child: Text('item ${items[index]}'),
               ),
             ),
           );
