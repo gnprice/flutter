@@ -252,6 +252,59 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets("Don't leak gesture recognizer on duplicate pointer", (WidgetTester tester) async {
+    final List<int> items = <int>[1, 2, 3];
+    int reorders = 0;
+    void handleReorder(int fromIndex, int toIndex) {
+      if (toIndex > fromIndex) {
+        toIndex -= 1;
+      }
+      items.insert(toIndex, items.removeAt(fromIndex));
+      reorders++;
+    }
+
+    await tester.pumpWidget(MaterialApp(
+      home: ReorderableList(
+        itemBuilder: (BuildContext context, int index) {
+          return ReorderableDragStartListener(
+            index: index,
+            key: ValueKey<int>(items[index]),
+            child: SizedBox(
+              height: 100,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('item ${items[index]}'),
+                ],
+              ),
+            ),
+          );
+        },
+        itemCount: items.length,
+        onReorder: handleReorder,
+      ),
+    ));
+
+    final TestGesture drag1 = await tester.startGesture(pointer: 1, tester.getCenter(find.text('item 0')));
+    final TestGesture drag2 = await tester.startGesture(pointer: 1, tester.getCenter(find.text('item 0')));
+    await tester.pump(kLongPressTimeout);
+
+    await drag1.moveBy(const Offset(0, 100));
+    // await drag2.moveBy(const Offset(0, 100));
+    await tester.pumpAndSettle();
+
+    await drag1.up();
+    // await drag2.up();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+
+
+    final TestGesture dragLater = await tester.startGesture(pointer: 1, )
+  });
+
   testWidgets('negative itemCount should assert', (WidgetTester tester) async {
     final List<int> items = <int>[1, 2, 3];
     await tester.pumpWidget(MaterialApp(
