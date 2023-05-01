@@ -595,6 +595,7 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
   int? _insertIndex;
   Offset? _finalDropPosition;
   MultiDragGestureRecognizer? _recognizer;
+  int? _recognizerPointer;
   // To implement the gap for the dragged item, we replace the dragged item
   // with a zero sized box, and then translate all of the later items down
   // by the size of the dragged item. This allows us to keep the order of the
@@ -674,12 +675,11 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
     setState(() {
       if (_dragInfo != null) {
         cancelReorder();
-      } else if (_recognizer != null) {
-        assert(!identical(recognizer, _recognizer));
+      } else if (_recognizer != null && _recognizerPointer != event.pointer) {
         _recognizer!.dispose();
         _recognizer = null;
+        _recognizerPointer = null;
       }
-      assert(_recognizer == null);
 
       if (_items.containsKey(index)) {
         _dragIndex = index;
@@ -687,6 +687,7 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
         _recognizer = recognizer
           ..onStart = _dragStart
           ..addPointer(event);
+        _recognizerPointer = event.pointer;
       } else {
         // TODO(darrenaustin): Can we handle this better, maybe scroll to the item?
         throw Exception('Attempting to start a drag on a non-visible item');
