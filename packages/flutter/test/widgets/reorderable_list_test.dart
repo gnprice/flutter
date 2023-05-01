@@ -254,7 +254,6 @@ void main() {
 
   testWidgets("Don't leak gesture recognizer on duplicate listener", (WidgetTester tester) async {
     final List<int> items = <int>[1, 2, 3];
-
     await tester.pumpWidget(MaterialApp(
       home: ReorderableList(
         itemBuilder: (BuildContext context, int index) {
@@ -285,6 +284,41 @@ void main() {
 
     await drag.moveBy(const Offset(0, 100));
     await tester.pumpAndSettle();
+
+    expect(routeCount(), greaterThan(0));
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(routeCount(), 0);
+  });
+
+  testWidgets("Don't leak gesture recognizer on duplicate listener, crashing version", (WidgetTester tester) async {
+    final List<int> items = <int>[1, 2, 3];
+    await tester.pumpWidget(MaterialApp(
+      home: ReorderableList(
+        itemBuilder: (BuildContext context, int index) {
+          return ReorderableDelayedDragStartListener(
+            index: index,
+            key: ValueKey<int>(items[index]),
+            child: SizedBox(
+              height: 100,
+              child: ReorderableDragStartListener(
+                index: index,
+                child: Text('item ${items[index]}'),
+              ),
+            ),
+          );
+        },
+        itemCount: items.length,
+        onReorder: (int from, int to) {},
+      ),
+    ));
+
+    final int pointer = tester.nextPointer;
+    int routeCount() => GestureBinding.instance.pointerRouter.debugRouteCount(pointer);
+
+    expect(routeCount(), 0);
+    await tester.startGesture(tester.getCenter(find.text('item 1')));
+    expect(routeCount(), greaterThan(0));
+    await tester.pump(kPressTimeout);
 
     expect(routeCount(), greaterThan(0));
     await tester.pumpWidget(const SizedBox.shrink());
