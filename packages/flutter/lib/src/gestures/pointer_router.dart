@@ -75,6 +75,22 @@ class PointerRouter {
     _globalRoutes.remove(route);
   }
 
+  /// The number of routes in the routing table for the given pointer.
+  ///
+  /// This is valid in debug builds only. In release builds, this will throw an
+  /// [UnsupportedError].
+  int debugRouteCount(int pointer) {
+    int? count;
+    assert(() {
+      count = _routeMap[pointer]?.length ?? 0;
+      return true;
+    }());
+    if (count != null) {
+      return count!;
+    }
+    throw UnsupportedError('debugRouteCount is not supported in release builds');
+  }
+
   /// The number of global routes that have been registered.
   ///
   /// This is valid in debug builds only. In release builds, this will throw an
