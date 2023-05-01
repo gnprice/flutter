@@ -53,6 +53,7 @@ class PointerRouter {
       _routeMap.remove(pointer);
     }
     print('removeRoute $pointer -> ${_routeMap[pointer]}');
+    print(StackTrace.current);
   }
 
   /// Adds a route to the global entry in the routing table.
