@@ -275,19 +275,20 @@ void main() {
       ),
     ));
 
-    int routeCount(int pointer) => GestureBinding.instance.pointerRouter.debugRouteCount(pointer);
+    final int pointer = tester.nextPointer;
+    int routeCount() => GestureBinding.instance.pointerRouter.debugRouteCount(pointer);
 
-    expect(routeCount(1), 0);
-    final TestGesture drag = await tester.startGesture(pointer: 1, tester.getCenter(find.text('item 1')));
-    expect(routeCount(1), greaterThan(0));
+    expect(routeCount(), 0);
+    final TestGesture drag = await tester.startGesture(tester.getCenter(find.text('item 1')));
+    expect(routeCount(), greaterThan(0));
     await tester.pump(kPressTimeout);
 
     await drag.moveBy(const Offset(0, 100));
     await tester.pumpAndSettle();
 
-    expect(routeCount(1), greaterThan(0));
+    expect(routeCount(), greaterThan(0));
     await tester.pumpWidget(const SizedBox.shrink());
-    expect(routeCount(1), 0);
+    expect(routeCount(), 0);
   });
 
   testWidgets('negative itemCount should assert', (WidgetTester tester) async {
