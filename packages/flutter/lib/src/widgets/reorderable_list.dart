@@ -675,6 +675,7 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
         _recognizer!.dispose();
         _recognizer = null;
       }
+      assert(_recognizer == null);
 
       if (_items.containsKey(index)) {
         _dragIndex = index;
