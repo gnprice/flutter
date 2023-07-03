@@ -20,8 +20,8 @@ final RegExp _definitelyShellLiteralWordRegExp = RegExp(r'^[a-zA-Z0-9./,_-]+$');
 /// for the sake of a clean appearance, when doing so meets the requirements.
 /// For example, `shellEscapeString("asdf") == "asdf"`.
 ///
-/// See also [shellEscapeCommand], for operating on a whole command line.
-String shellEscapeString(String value) {
+/// See also [_shellEscapeCommand], for operating on a whole command line.
+String _shellEscapeString(String value) {
   if (_definitelyShellLiteralWordRegExp.hasMatch(value)) {
     return value;
   }
@@ -50,10 +50,10 @@ String shellEscapeString(String value) {
 /// For example, `shellEscapeCommand(['git', 'commit', '-am', 'a commit'])`
 /// returns `git commit -am 'a commit'`.
 ///
-/// See also [shellEscapeString], for operating on an individual
+/// See also [_shellEscapeString], for operating on an individual
 /// argument of a command.
-String shellEscapeCommand(List<String> command) {
-  return command.map(shellEscapeString).join(' ');
+String _shellEscapeCommand(List<String> command) {
+  return command.map(_shellEscapeString).join(' ');
 }
 
 /// Start a process and run it to completion, throwing an exception on failure.
@@ -83,7 +83,7 @@ ProcessResult runSyncSuccess(
   if (result.exitCode != 0) {
     throw Exception(
       'child process exited with code ${result.exitCode}\n'
-      'command: ${shellEscapeCommand(command)}\n'
+      'command: ${_shellEscapeCommand(command)}\n'
       'stdout: ================================================================\n'
       '${result.stdout}\n'
       'stderr: ================================================================\n'
