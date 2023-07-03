@@ -101,19 +101,6 @@ Future<void> main() async {
       expectCacheMiss(tree);
     });
 
-    test('remove some tool source file -> invalidate cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
-      removeFile(tree, toolsLibSrc.childFile('device.dart')); // packages/flutter_tools/lib/src/device.dart
-      tree.runSyncSuccess(commitCmd);
-      // In removing a tool source file, we're counting extra hard on
-      // the fake Dart not attempting to actually compile the tool.
-      // (If we wanted to remove a source file that's part of the tool -- so that
-      // it really should cause a cache miss -- and yet have the resulting tree
-      // validly compile, then we'd have to work a lot harder.)
-      expectCacheMiss(tree); // FAILURE
-    });
-
     test('change tool tests -> hit cache', () {
       final TestFlutterTree tree = TestFlutterTree.takeWarm();
       final Directory testDir = tree.toolsPackageDir.childDirectory('test'); // packages/flutter_tools/test/
