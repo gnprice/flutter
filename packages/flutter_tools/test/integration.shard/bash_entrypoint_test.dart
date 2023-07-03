@@ -17,17 +17,7 @@ Future<void> main() async {
   group('snapshot cache', () {
     tearDownAll(TestFlutterTree.dispose);
 
-    // final List<Matcher> upgradeMatcherList = <Matcher>[
-    //   startsWith('pub upgrade:'),
-    //   startsWith('generate-snapshot:'),
-    // ];
-
-    // final Matcher isCacheHit = isNot(anyElement(anyOf(upgradeMatcherList)));
-    // final Matcher isCacheMiss = containsAllInOrder(upgradeMatcherList);
-
     void expectCacheHit(TestFlutterTree tree) {
-      // expect(tree.ensureToolWithFakeDart(), isCacheHit);
-
       final String baseStampValue = flutterToolsStampValue(revision: tree.baseRevision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       final String headStampValue = flutterToolsStampValue(revision: tree.headRevision(), toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       expect(readStringLikeShell(tree.flutterToolsStampFile), baseStampValue);
@@ -40,8 +30,6 @@ Future<void> main() async {
     }
 
     void expectCacheMiss(TestFlutterTree tree) {
-      // expect(tree.ensureToolWithFakeDart(), isCacheMiss);
-
       final String revision = tree.headRevision();
       final String stampValue = flutterToolsStampValue(revision: revision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
