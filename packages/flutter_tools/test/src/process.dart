@@ -101,11 +101,6 @@ String _asShellOutput(String raw) {
   return raw.replaceFirst(_trailingNewlineRegExp, '');
 }
 
-List<int> _bytesAsShellOutput(List<int> raw) {
-  final int end = 1 + raw.lastIndexWhere((int byte) => byte != 0x0a);
-  return end == raw.length ? raw : raw.sublist(0, end);
-}
-
 /// Reads the file contents as a string with the semantics of `$(cat …)`,
 /// returning null if the operation fails.
 ///
@@ -116,8 +111,6 @@ List<int> _bytesAsShellOutput(List<int> raw) {
 /// any run of newlines at the end of the string is removed.
 ///
 /// See also:
-/// * [processResultShellOutput], for the semantics of `$(…)`
-///   on an arbitrary command.
 /// * the Bash manual on command substitution `$(…)`: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
 String? readStringLikeShell(File file, {Encoding encoding = utf8}) {
   try {
@@ -125,28 +118,4 @@ String? readStringLikeShell(File file, {Encoding encoding = utf8}) {
   } on FileSystemException {
     return null;
   }
-}
-
-/// The command's output, as shell command substitution `$(…)` would take it.
-///
-/// Among commands following Unix CLI conventions, this is commonly the
-/// intended semantics for consuming the output.
-///
-/// This is defined as the result of removing from [ProcessResult.stdout] any run of
-/// newlines at the end of the string.  For example, if [ProcessResult.stdout] is any of
-/// 'a\nb', 'a\nb\n', or 'a\nb\n\n\n', then the return value of [processResultShellOutput]
-/// will be 'a\nb'.
-///
-/// This value has the same type as [ProcessResult.stdout]: either `List<int>` or `String`.
-///
-/// See also:
-/// * [readStringLikeShell], for reading a file with the semantics of `$(cat …)`.
-/// * the Bash manual on command substitution: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
-Object processResultShellOutput(ProcessResult result) {
-  final Object? stdout = result.stdout;
-  return switch (stdout) {
-    String() => _asShellOutput(stdout),
-    List<int>() => _bytesAsShellOutput(stdout),
-    _ => throw StateError('ProcessResult.stdout has invalid type ${stdout.runtimeType}'),
-  };
 }

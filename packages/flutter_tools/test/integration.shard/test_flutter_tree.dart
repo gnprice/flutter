@@ -9,7 +9,6 @@ import 'package:file/file.dart';
 
 import '../src/common.dart';
 import '../src/flutter_tree.dart';
-import '../src/process.dart' hide runSyncSuccess;
 import '../src/process.dart' as proc show runSyncSuccess;
 import 'test_utils.dart';
 
@@ -38,7 +37,7 @@ class FlutterTreeWithToolCache extends FlutterTree {
   Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk'); // bin/cache/dart-sdk/
   File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp'); // bin/cache/engine-dart-sdk.stamp
 
-  String headRevision() => processResultShellOutput(runSyncSuccess(<String>['git', 'rev-parse', 'HEAD'])) as String;
+  String headRevision() => (runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).stdout as String).replaceFirst(RegExp(r'\n*$'), '');
 
   /// List the files where the worktree differs from the HEAD revision.
   ///
