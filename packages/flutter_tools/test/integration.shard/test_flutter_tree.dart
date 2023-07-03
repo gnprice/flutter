@@ -28,7 +28,7 @@ String flutterToolsStampValue({required String revision, required String toolArg
 
 final RegExp _trailingNewlineRegExp = RegExp(r'\n*$');
 
-String trimFinalNewlines(String s) {
+String _trimFinalNewlines(String s) {
   return s.replaceFirst(_trailingNewlineRegExp, '');
 }
 
@@ -40,12 +40,10 @@ class FlutterTreeWithToolCache extends FlutterTree {
   Directory get binCacheDir => root.childDirectory('bin').childDirectory('cache'); // bin/cache/
   File get snapshotFile => binCacheDir.childFile('flutter_tools.snapshot'); // bin/cache/flutter_tools.snapshot
   File get flutterToolsStampFile => binCacheDir.childFile('flutter_tools.stamp'); // bin/cache/flutter_tools.stamp
-  Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk'); // bin/cache/dart-sdk/
-  File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp'); // bin/cache/engine-dart-sdk.stamp
 
-  String headRevision() => trimFinalNewlines(runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).stdout as String);
+  String headRevision() => _trimFinalNewlines(runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).stdout as String);
 
-  String readStampFile() => trimFinalNewlines(flutterToolsStampFile.readAsStringSync());
+  String readStampFile() => _trimFinalNewlines(flutterToolsStampFile.readAsStringSync());
 
   /// List the files where the worktree differs from the HEAD revision.
   ///
@@ -68,16 +66,6 @@ class FlutterTreeWithToolCache extends FlutterTree {
       'HEAD',
     ];
     return (runSyncSuccess(command).stdout as String).split('\x00')..removeLast();
-  }
-
-  /// Run a trivial command with the tree's `bin/dart`, to ensure the cache
-  /// is up to date.
-  ///
-  /// This happens to update all the same caches as [ensureToolSync],
-  /// but in principle in the future it might not.
-  void ensureDartSync() {
-    // `dart --version` is faster than simply `dart`
-    runSyncSuccess(<String>[binDart.path, '--version']);
   }
 
   /// Run a trivial command with the tree's `bin/flutter`, to ensure the cache

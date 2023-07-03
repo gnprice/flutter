@@ -20,11 +20,9 @@ Future<void> main() async {
       final String baseStampValue = flutterToolsStampValue(revision: tree.baseRevision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       final String headStampValue = flutterToolsStampValue(revision: tree.headRevision(), toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       expect(tree.readStampFile(), baseStampValue);
-      // final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
       final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
       tree.ensureToolSync();
       expect(tree.readStampFile(), headStampValue);
-      // expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
       expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
     }
 
@@ -33,9 +31,7 @@ Future<void> main() async {
       final String stampValue = flutterToolsStampValue(revision: revision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       final DateTime oldStampTime = tree.flutterToolsStampFile.lastModifiedSync();
       final DateTime oldSnapshotTime = tree.snapshotFile.lastModifiedSync();
-      // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
       tree.ensureToolSync();
-      // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
       expect(tree.readStampFile(), stampValue);
       expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
       expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
@@ -122,17 +118,6 @@ Future<void> main() async {
 void mungeFile(File file) {
   assert(file.existsSync());
   file.writeAsStringSync('\n', mode: FileMode.append);
-}
-
-void addFile(TestFlutterTree tree, File file) {
-  assert(!file.existsSync());
-  file.writeAsStringSync('// contents\n');
-  tree.runSyncSuccess(<String>['git', 'add', '--', file.path]);
-}
-
-void removeFile(TestFlutterTree tree, File file) {
-  assert(file.existsSync());
-  tree.runSyncSuccess(<String>['git', 'rm', '--', file.path]);
 }
 
 const List<String> commitCmd = <String>['git', 'commit', '-am', 'test commit'];
