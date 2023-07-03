@@ -198,17 +198,16 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
     final List<String> filesAdded = hostFlutterTree.gitModifiedFiles(diffFilter: 'A');
     final List<String> filesEdited = hostFlutterTree.gitModifiedFiles(diffFilter: 'MUT');
     final List<String> filesDeleted = hostFlutterTree.gitModifiedFiles(diffFilter: 'D');
-    if (filesAdded.isNotEmpty || filesEdited.isNotEmpty) {
-      hostFlutterTree.runSyncSuccess(<String>[
-        'rsync', '-a', '--relative',
-        ...filesAdded, ...filesEdited,
-        root.path + Platform.pathSeparator,
+    for (final String file in <String>[...filesAdded, ...filesEdited]) {
+      final File source = fileSystem.file(fileSystem.path.join(hostFlutterTree.root.path, file));
+      final File target = fileSystem.file(fileSystem.path.join(root.path, file));
+      target.parent.createSync(recursive: true);
+      source.copySync(target.path);
+    }
+    if (filesAdded.isNotEmpty) {
+      runSyncSuccess(<String>[
+        'git', 'add', '--', ...filesAdded,
       ]);
-      if (filesAdded.isNotEmpty) {
-        runSyncSuccess(<String>[
-          'git', 'add', '--', ...filesAdded,
-        ]);
-      }
     }
     for (final String file in filesDeleted) {
       fileSystem.file(fileSystem.path.join(root.path, file)).deleteSync();
