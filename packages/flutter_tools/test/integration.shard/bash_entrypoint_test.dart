@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:file/file.dart';
 
 import '../src/common.dart';
-import '../src/process.dart';
 import 'test_flutter_tree.dart';
 import 'test_utils.dart';
 
@@ -20,11 +19,11 @@ Future<void> main() async {
     void expectCacheHit(TestFlutterTree tree) {
       final String baseStampValue = flutterToolsStampValue(revision: tree.baseRevision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
       final String headStampValue = flutterToolsStampValue(revision: tree.headRevision(), toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
-      expect(readStringLikeShell(tree.flutterToolsStampFile), baseStampValue);
+      expect(tree.readStampFile(), baseStampValue);
       // final DateTime stampTime = tree.flutterToolsStampFile.lastModifiedSync();
       final DateTime snapshotTime = tree.snapshotFile.lastModifiedSync();
       tree.ensureToolSync();
-      expect(readStringLikeShell(tree.flutterToolsStampFile), headStampValue);
+      expect(tree.readStampFile(), headStampValue);
       // expect(tree.flutterToolsStampFile.lastModifiedSync(), stampTime);
       expect(tree.snapshotFile.lastModifiedSync(), snapshotTime);
     }
@@ -37,7 +36,7 @@ Future<void> main() async {
       // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
       tree.ensureToolSync();
       // print(tree.runSyncSuccess(['ls', '-lrt', '--full-time', 'bin/cache']).stdout);
-      expect(readStringLikeShell(tree.flutterToolsStampFile), stampValue);
+      expect(tree.readStampFile(), stampValue);
       expect(tree.flutterToolsStampFile.lastModifiedSync().isAfter(oldStampTime), true);
       expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
     }

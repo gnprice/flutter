@@ -26,6 +26,12 @@ String flutterToolsStampValue({required String revision, required String toolArg
   return '$revision:$toolArgs';
 }
 
+final RegExp _trailingNewlineRegExp = RegExp(r'\n*$');
+
+String trimFinalNewlines(String s) {
+  return s.replaceFirst(_trailingNewlineRegExp, '');
+}
+
 /// A [FlutterTree] with additional members which are helpful for [TestFlutterTree]
 /// and its users.
 class FlutterTreeWithToolCache extends FlutterTree {
@@ -37,7 +43,9 @@ class FlutterTreeWithToolCache extends FlutterTree {
   Directory get dartSdkDir => binCacheDir.childDirectory('dart-sdk'); // bin/cache/dart-sdk/
   File get engineStampFile => binCacheDir.childFile('engine-dart-sdk.stamp'); // bin/cache/engine-dart-sdk.stamp
 
-  String headRevision() => (runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).stdout as String).replaceFirst(RegExp(r'\n*$'), '');
+  String headRevision() => trimFinalNewlines(runSyncSuccess(<String>['git', 'rev-parse', 'HEAD']).stdout as String);
+
+  String readStampFile() => trimFinalNewlines(flutterToolsStampFile.readAsStringSync());
 
   /// List the files where the worktree differs from the HEAD revision.
   ///

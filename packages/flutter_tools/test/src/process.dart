@@ -5,7 +5,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:file/file.dart';
 import 'package:process/process.dart';
 
 /// Matches only strings that a shell will always parse as a single literal word.
@@ -93,29 +92,4 @@ ProcessResult runSyncSuccess(
     );
   }
   return result;
-}
-
-final RegExp _trailingNewlineRegExp = RegExp(r'\n*$');
-
-String _asShellOutput(String raw) {
-  return raw.replaceFirst(_trailingNewlineRegExp, '');
-}
-
-/// Reads the file contents as a string with the semantics of `$(cat …)`,
-/// returning null if the operation fails.
-///
-/// This is commonly the intended semantics when a file was meant to be
-/// read or written by a shell script.
-///
-/// The file's contents are read using the given [Encoding], and then
-/// any run of newlines at the end of the string is removed.
-///
-/// See also:
-/// * the Bash manual on command substitution `$(…)`: <https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution>.
-String? readStringLikeShell(File file, {Encoding encoding = utf8}) {
-  try {
-    return _asShellOutput(file.readAsStringSync(encoding: encoding));
-  } on FileSystemException {
-    return null;
-  }
 }
