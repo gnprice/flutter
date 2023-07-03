@@ -43,14 +43,16 @@ Future<void> main() async {
     }
 
     test('change tool pubspec.yaml -> invalidate cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
+      final TestFlutterTree tree = TestFlutterTree.takeClean();
+      tree.ensureToolSync();
       mungeFile(tree.toolsPackageDir.childFile('pubspec.yaml')); // packages/flutter_tools/pubspec.yaml
       tree.runSyncSuccess(commitCmd);
       expectCacheMiss(tree);
     });
 
     test('change tool tests -> hit cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
+      final TestFlutterTree tree = TestFlutterTree.takeClean();
+      tree.ensureToolSync();
       final Directory testDir = tree.toolsPackageDir.childDirectory('test'); // packages/flutter_tools/test/
       mungeFile(testDir.childDirectory('src').childFile('common.dart'));
       mungeFile(testDir.childDirectory('general.shard').childFile('compile_test.dart'));
@@ -60,7 +62,8 @@ Future<void> main() async {
     });
 
     test('change framework -> hit cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
+      final TestFlutterTree tree = TestFlutterTree.takeClean();
+      tree.ensureToolSync();
       mungeFile(tree.frameworkDir.childFile('pubspec.yaml'));
       mungeFile(tree.frameworkDir.childDirectory('lib').childFile('foundation.dart'));
       mungeFile(tree.frameworkDir.childDirectory('lib').childDirectory('src').childDirectory('widgets').childFile('framework.dart'));
