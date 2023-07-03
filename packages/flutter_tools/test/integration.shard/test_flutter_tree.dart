@@ -279,13 +279,6 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
 
     _reset();
 
-    // Borrow the Dart SDK from the host tree.
-    // This saves having to download it again.
-    hostFlutterTree.ensureDartSync();
-    dartSdkDir.createSync(recursive: true);
-    _rsyncTreesSync(hostFlutterTree.dartSdkDir, dartSdkDir);
-    hostFlutterTree.engineStampFile.copySync(engineStampFile.path);
-
     // Warm the rest of the cache directly in the test tree.
     assert(readStringLikeShell(flutterToolsStampFile) == null);
     final String stampValue = flutterToolsStampValue(
