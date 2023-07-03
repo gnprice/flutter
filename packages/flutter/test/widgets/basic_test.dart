@@ -463,6 +463,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(useMaterial3: false),
           home: Scaffold(
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -517,6 +518,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(useMaterial3: false),
           home: Scaffold(
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -607,7 +609,7 @@ void main() {
       // Defaults to Clip.none
       expect(renderObject.clipBehavior, equals(clip ?? Clip.none), reason: 'for clip = $clip');
 
-      switch(clip) {
+      switch (clip) {
         case null:
         case Clip.none:
           // the UnconstrainedBox overflows.
