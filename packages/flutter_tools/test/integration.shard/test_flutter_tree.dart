@@ -290,7 +290,7 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
     assert(readStringLikeShell(flutterToolsStampFile) == null);
     final String stampValue = flutterToolsStampValue(
         revision: baseRevision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
-    ensureToolWithFakeDart();
+    ensureToolSync();
     assert(readStringLikeShell(flutterToolsStampFile) == stampValue);
 
     _warmTree = fileSystem
@@ -309,89 +309,5 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
     } on FileSystemException {
       // ignore
     }
-  }
-
-  File get fakeDartLog => binCacheDir.childFile('fake-dart.log'); // bin/cache/fake-dart.log
-  File get dartBinary => dartSdkDir.childDirectory('bin').childFile('dart'); // bin/cache/dart-sdk/bin/dart
-  File get dartBinaryOrig => dartSdkDir.childDirectory('bin').childFile('dart.orig'); // bin/cache/dart-sdk/bin/dart.orig
-
-  /// Run the tool entrypoint to update the cache, with the Dart binary faked out.
-  ///
-  /// The fake `dart` logs the commands it receives, and this method returns
-  /// the list of log entries, for testing the entrypoint's behavior.
-  ///
-  /// The fake `dart` ignores most possible commands, except for logging them.
-  /// For some commands used by the entrypoint when it tries to update the tool,
-  /// it provides the needed behavior using shortcuts for efficiency:
-  ///
-  ///  * A command that looks like the entrypoint's `dart pub upgrade`
-  ///    will fake it by updating the last-modified time on `pubspec.lock`.
-  ///    (Each `pubspec.lock` in the baseline tree comes from [hostFlutterTree],
-  ///    so effectively we rely on those being up to date.)
-  ///
-  ///  * A command that looks like the entrypoint's command to generate the
-  ///    tool snapshot will fake it by copying from [hostFlutterTree].
-  ///
-  /// In particular, if this tree contains changes relative to [hostFlutterTree]
-  /// that would affect the behavior of the tool, the resulting snapshot will
-  /// not reflect those changes.
-  List<String> ensureToolWithFakeDart() {
-    fakeDartLog.writeAsStringSync('');
-    dartBinary.renameSync(dartBinaryOrig.path);
-    _writeFakeDart();
-    ensureToolSync();
-    dartBinaryOrig.renameSync(dartBinary.path);
-    return fakeDartLog.readAsLinesSync();
-  }
-
-  /// Write to [dartBinary] a script that fakes out the `dart` command.
-  ///
-  /// See [ensureToolWithFakeDart].
-  void _writeFakeDart() {
-    dartBinary.writeAsStringSync('''
-#!/usr/bin/env bash
-
-full_command="dart \$*"
-
-function log_command() {
-  local description="\$1"
-  echo "\$description: \$full_command" >>${shellEscapeString(fakeDartLog.path)}
-}
-
-snapshot_path=${shellEscapeString(snapshotFile.path)}
-snapshot_arg="--snapshot=\${snapshot_path}"
-
-case "\$*" in
-  "pub upgrade "*)
-    # This is a `dart pub upgrade` command, as in pub_upgrade_with_retry .
-    # Just update the last-modified time on the pubspec.lock .
-    touch pubspec.lock
-    log_command "pub upgrade"
-    ;;
-
-  *" \$snapshot_arg "* | "\$snapshot_arg "*)
-    # This is the command to generate the snapshot,
-    # in the upgrade_flutter function in bin/internal/shared.sh .
-    # Fake generating the snapshot, by copying from the host tree.
-    cp ${shellEscapeString(hostFlutterTree.snapshotFile.path)} \\
-      "\$snapshot_path"
-    log_command generate-snapshot
-    ;;
-
-  *" \$snapshot_path "* | *" \$snapshot_path" | "\$snapshot_path "* | "\$snapshot_path")
-    # This looks like the "flutter" case at the end of shared::execute.
-    # Do nothing.
-    log_command flutter
-    ;;
-
-  *)
-    # This is some other `dart` invocation we don't recognize;
-    # perhaps the "dart" case at the end of shared::execute,
-    # which leaves no recognizable signature of its own.
-    # Do nothing.
-    log_command other
-esac
-''');
-    proc.runSyncSuccess(processManager, <String>['chmod', '+x', dartBinary.path]); // https://github.com/dart-lang/sdk/issues/15078
   }
 }
