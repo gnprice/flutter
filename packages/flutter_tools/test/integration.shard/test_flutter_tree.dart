@@ -105,25 +105,6 @@ class FlutterTreeWithToolCache extends FlutterTree {
   }
 }
 
-/// Use `rsync` to copy one directory tree to another, exactly,
-/// deleting stray files.
-///
-/// For each file or directory found under [source], there will be a
-/// corresponding entity at the same relative path under [target],
-/// with the same contents, same last-modified time, and same other metadata.
-/// Any entities under [target] that do not correspond to an entity under
-/// [source] will be deleted.
-///
-/// This is equivalent to the shell command
-/// `rsync -a --delete "${source}/" "${target}/"`.
-void _rsyncTreesSync(Directory source, Directory target) {
-  proc.runSyncSuccess(processManager, <String>[
-    'rsync', '-a', '--delete',
-    source.path + Platform.pathSeparator,
-    target.path + Platform.pathSeparator,
-  ]);
-}
-
 /// A temporary copy of the Flutter tree, to be freely mutated for testing.
 ///
 /// This is a real Git worktree in the real filesystem.
@@ -216,9 +197,6 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
   /// The Git commit ID that is HEAD in [hostFlutterTree].
   final String _origRevision;
 
-  /// The memoized warm tree for [TestFlutterTree.takeWarm].
-  Directory? _warmTree;
-
   void _initialize() {
     proc.runSyncSuccess(processManager, <String>[
       'git', 'clone',
@@ -272,11 +250,6 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
   }
 
   void _warm() {
-    if (_warmTree != null) {
-      _rsyncTreesSync(_warmTree!, root);
-      return;
-    }
-
     _reset();
 
     // Warm the rest of the cache directly in the test tree.
@@ -285,20 +258,11 @@ class TestFlutterTree extends FlutterTreeWithToolCache {
         revision: baseRevision, toolArgs: Platform.environment['FLUTTER_TOOL_ARGS'] ?? '');
     ensureToolSync();
     assert(readStringLikeShell(flutterToolsStampFile) == stampValue);
-
-    _warmTree = fileSystem
-      .systemTempDirectory.createTempSync('flutter_test_tree_warm.').absolute;
-    _rsyncTreesSync(root, _warmTree!);
   }
 
   void _dispose() {
     try {
       root.deleteSync(recursive: true);
-    } on FileSystemException {
-      // ignore
-    }
-    try {
-      _warmTree?.deleteSync(recursive: true);
     } on FileSystemException {
       // ignore
     }
