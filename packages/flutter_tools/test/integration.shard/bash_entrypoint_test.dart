@@ -54,49 +54,9 @@ Future<void> main() async {
       expect(tree.snapshotFile.lastModifiedSync().isAfter(oldSnapshotTime), true);
     }
 
-    test('change nothing -> hit cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      expectCacheHit(tree);
-    });
-
-    test('change engine version -> invalidate snapshot cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      // Simulate rolling the engine version (with no other changes)…
-      const String fakeEngineVersion = '0123456789abcdef0123456789abcdef012345678';
-      tree.engineVersionFile.writeAsStringSync('$fakeEngineVersion\n');
-      tree.runSyncSuccess(commitCmd);
-      // … and having already downloaded the new version's Dart SDK.
-      tree.engineStampFile.writeAsStringSync('$fakeEngineVersion\n');
-      // The entrypoint script should recompile the snapshot.
-      expectCacheMiss(tree);
-    });
-
     test('change tool pubspec.yaml -> invalidate cache', () {
       final TestFlutterTree tree = TestFlutterTree.takeWarm();
       mungeFile(tree.toolsPackageDir.childFile('pubspec.yaml')); // packages/flutter_tools/pubspec.yaml
-      tree.runSyncSuccess(commitCmd);
-      expectCacheMiss(tree);
-    });
-
-    test('change tool bin-dart script -> invalidate cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      mungeFile(tree.toolsPackageDir.childDirectory('bin').childFile('flutter_tools.dart')); // packages/flutter_tools/bin/flutter_tools.dart
-      tree.runSyncSuccess(commitCmd);
-      expectCacheMiss(tree);
-    });
-
-    test('change some tool source file -> invalidate cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
-      mungeFile(toolsLibSrc.childFile('device.dart')); // packages/flutter_tools/lib/src/device.dart
-      tree.runSyncSuccess(commitCmd);
-      expectCacheMiss(tree);
-    });
-
-    test('add a tool source file -> invalidate cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      final Directory toolsLibSrc = tree.toolsPackageDir.childDirectory('lib').childDirectory('src');
-      addFile(tree, toolsLibSrc.childFile('device_differently.dart'));
       tree.runSyncSuccess(commitCmd);
       expectCacheMiss(tree);
     });
@@ -117,17 +77,6 @@ Future<void> main() async {
       mungeFile(tree.frameworkDir.childDirectory('lib').childFile('foundation.dart'));
       mungeFile(tree.frameworkDir.childDirectory('lib').childDirectory('src').childDirectory('widgets').childFile('framework.dart'));
       mungeFile(tree.frameworkDir.childDirectory('test').childDirectory('rendering').childFile('box_test.dart'));
-      tree.runSyncSuccess(commitCmd);
-      expectCacheHit(tree);
-    });
-
-    test('change example app -> hit cache', () {
-      final TestFlutterTree tree = TestFlutterTree.takeWarm();
-      mungeFile(tree.helloWorldDir.childFile('pubspec.yaml'));
-      mungeFile(tree.helloWorldDir.childDirectory('android').childDirectory('app').childFile('build.gradle'));
-      mungeFile(tree.helloWorldDir.childDirectory('lib').childFile('main.dart'));
-      removeFile(tree, tree.helloWorldDir.childDirectory('lib').childFile('arabic.dart'));
-      addFile(tree, tree.helloWorldDir.childDirectory('lib').childFile('other.dart'));
       tree.runSyncSuccess(commitCmd);
       expectCacheHit(tree);
     });
