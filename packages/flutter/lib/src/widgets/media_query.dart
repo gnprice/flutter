@@ -277,9 +277,40 @@ class MediaQueryData {
   ///    for a [BuildContext].
   final Size size;
 
-  /// The number of device pixels for each logical pixel. This number might not
-  /// be a power of two. Indeed, it might not even be an integer. For example,
-  /// the Nexus 6 has a device pixel ratio of 3.5.
+  /// The number of device pixels for each logical pixel.
+  ///
+  /// Logical pixels are the unit used for sizes and positions throughout
+  /// the Flutter framework.  A logical pixel is roughly the same visual size
+  /// across devices.  Device pixels, also called physical pixels, refer to
+  /// the actual hardware pixels on the device.
+  ///
+  /// This ratio might not be a power of two. Indeed, it might not even be an
+  /// integer. For example, the Nexus 6 has a device pixel ratio of 3.5.
+  ///
+  /// ## Scaling up or down
+  ///
+  /// This property on [MediaQueryData] does not control how the layout
+  /// in logical pixels is actually translated for display on the screen.
+  /// That is controlled by the engine, and this property only reports it.
+  ///
+  /// Rather, this [devicePixelRatio] property is consulted by various widgets
+  /// in order to be aware of how the layouts and painting operations they
+  /// are responsible for will be translated into physical pixels on the screen:
+  /// for example, in order to produce a one-physical-pixel hairline divider,
+  /// or to align the caret in a text field on physical pixels.
+  ///
+  /// In particular, a [MediaQuery] widget that provides a different
+  /// value for this property will not cause its subtree to visually
+  /// scale up or down in size.
+  /// To achieve that effect, consider using [Transform.scale]
+  /// together with [FractionallySizedBox].
+  ///
+  /// See also:
+  ///
+  ///  * [FlutterView.devicePixelRatio], which reports the device pixel ratio
+  ///    for an underlying view.
+  ///  * [MediaQuery.devicePixelRatioOf], a method to find and depend on the
+  ///    device pixel ratio for a given [BuildContext].
   final double devicePixelRatio;
 
   /// Deprecated. Will be removed in a future version of Flutter. Use
