@@ -4103,15 +4103,13 @@ class _RawIndexedStack extends Stack {
   }
 }
 
+/// The render object element configured by a [_RawIndexedStack].
 class _IndexedStackElement extends MultiChildRenderObjectElement {
   _IndexedStackElement(_RawIndexedStack super.widget);
 
   @override
-  _RawIndexedStack get widget => super.widget as _RawIndexedStack;
-
-  @override
   void debugVisitOnstageChildren(ElementVisitor visitor) {
-    final int? index = widget.index;
+    final int? index = (widget as _RawIndexedStack).index;
     // If the index is null, no child is onstage. Otherwise, only the child at
     // the selected index is.
     if (index != null && children.isNotEmpty) {
