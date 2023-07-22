@@ -78,7 +78,15 @@ class RawAutocompleteController<T extends Object> extends ChangeNotifier {
     T? selection,
   }) : _options = options ?? Iterable<T>.empty(),
        _highlightedOptionIndexNotifier = ValueNotifier<int>(highlightedOptionIndex ?? 0),
-       _selection = selection;
+       _selection = selection {
+    _highlightedOptionIndexNotifier.addListener(notifyListeners);
+  }
+
+  @override
+  void dispose() {
+    _highlightedOptionIndexNotifier.dispose();
+    super.dispose();
+  }
 
   /// The options.
   Iterable<T> get options => _options;
@@ -99,11 +107,7 @@ class RawAutocompleteController<T extends Object> extends ChangeNotifier {
   /// When [highlightedOptionIndex] is replaced with something
   /// that is not == to the old value, listeners are notified.
   set highlightedOptionIndex(int newIndex) {
-    if (_highlightedOptionIndexNotifier.value == newIndex) {
-      return;
-    }
     _highlightedOptionIndexNotifier.value = newIndex;
-    notifyListeners();
   }
 
   /// A [ValueNotifier] for [highlightedOptionIndex].
