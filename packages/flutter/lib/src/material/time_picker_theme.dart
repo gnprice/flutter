@@ -32,8 +32,8 @@ import 'theme.dart';
 ///
 ///  * [ThemeData], which describes the overall theme information for the
 ///    application.
-///  * [TimePickerTheme], which describes the actual configuration of a time
-///    picker theme.
+///  * [TimePickerTheme], a widget which overrides the time picker theme
+///    for a subtree.
 @immutable
 class TimePickerThemeData with Diagnosticable {
 

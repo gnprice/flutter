@@ -25,8 +25,8 @@ import 'theme.dart';
 ///
 /// See also:
 ///
-///  * [ToggleButtonsTheme], which describes the actual configuration of a
-///    toggle buttons theme.
+///  * [ToggleButtonsTheme], which overrides the toggle-buttons theme
+///    for a subtree.
 @immutable
 class ToggleButtonsThemeData with Diagnosticable {
   /// Creates the set of color and border properties used to configure

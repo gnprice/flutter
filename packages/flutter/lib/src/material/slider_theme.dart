@@ -115,8 +115,6 @@ class SliderTheme extends InheritedTheme {
 /// See also:
 ///
 ///  * [Slider], a Material Design slider widget.
-///  * [SliderThemeData], which describes the actual configuration of a slider
-///    theme.
 enum ShowValueIndicator {
   /// The value indicator will only be shown for discrete sliders (sliders
   /// where [Slider.divisions] is non-null).
