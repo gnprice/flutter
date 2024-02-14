@@ -410,16 +410,8 @@ class AndroidDevice extends Device {
     if (!await isAppInstalled(app, userIdentifier: userIdentifier)) {
       return false;
     }
-    _logger.printStatus('Uninstalling old version...');
-    if (!await uninstallApp(app, userIdentifier: userIdentifier)) {
-      _logger.printError('Error: Uninstalling old version failed.');
-      return false;
-    }
-    if (!await _installApp(app, userIdentifier: userIdentifier)) {
-      _logger.printError('Error: Failed to install APK again.');
-      return false;
-    }
-    return true;
+    _logger.printError('Error: Failed to install APK fresh.');
+    return false;
   }
 
   Future<bool> _installApp(AndroidApk app, {String? userIdentifier}) async {
@@ -438,6 +430,7 @@ class AndroidDevice extends Device {
         'install',
         '-t',
         '-r',
+        '-d',
         if (userIdentifier != null) ...<String>['--user', userIdentifier],
         app.applicationPackage.path,
       ]),
