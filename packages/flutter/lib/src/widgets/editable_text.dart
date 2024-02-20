@@ -3706,18 +3706,19 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
     TargetPlatform.windows => false,
   };
 
-  bool _isInternalScrollableNotification(BuildContext? notificationContext) {
-    return notificationContext == _scrollableKey.currentState?.notificationContext;
+  bool _isInternalScrollableNotification(BuildContext notificationContext) {
+    return Scrollable.maybeOf(notificationContext) == _scrollableKey.currentState;
   }
 
-  bool _scrollableNotificationIsFromAncestor(BuildContext? notificationContext) {
-    if (notificationContext == null) {
+  bool _scrollableNotificationIsFromAncestor(BuildContext notificationContext) {
+    final ScrollableState? notificationScrollable = Scrollable.maybeOf(notificationContext);
+    if (notificationScrollable == null) {
       return false;
     }
     BuildContext? currentContext = context;
     while (currentContext != null) {
-      final ScrollableState? scrollableState = currentContext.findAncestorStateOfType<ScrollableState>();
-      if (scrollableState?.notificationContext == notificationContext) {
+      final ScrollableState? scrollableState = Scrollable.maybeOf(currentContext);
+      if (scrollableState == notificationScrollable) {
         return true;
       }
       currentContext = scrollableState?.context;
@@ -3744,12 +3745,16 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
       _disposeScrollNotificationObserver();
       return;
     }
-    if (_isInternalScrollableNotification(notification.context)) {
+    final BuildContext? notificationContext = notification.context;
+    if (notificationContext == null) {
       return;
     }
-    // The is-from-ancestor check involves expensive subtree traversal,
+    if (_isInternalScrollableNotification(notificationContext)) {
+      return;
+    }
+    // The is-from-ancestor check is O(N) in the number of ancestor Scrollables,
     // so do it after the other checks.
-    if (!_scrollableNotificationIsFromAncestor(notification.context)) {
+    if (!_scrollableNotificationIsFromAncestor(notificationContext)) {
       return;
     }
     _handleContextMenuOnScroll(notification);
