@@ -2207,7 +2207,7 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
 
   bool get _webContextMenuEnabled => kIsWeb && BrowserContextMenu.enabled;
 
-  final GlobalKey _scrollableKey = GlobalKey();
+  final GlobalKey<ScrollableState> _scrollableKey = GlobalKey();
   ScrollController? _internalScrollController;
   ScrollController get _scrollController => widget.scrollController ?? (_internalScrollController ??= ScrollController());
 
@@ -3707,25 +3707,17 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
   };
 
   bool _isInternalScrollableNotification(BuildContext? notificationContext) {
-    final ScrollableState? scrollableState = notificationContext?.findAncestorStateOfType<ScrollableState>();
-    return _scrollableKey.currentContext == scrollableState?.context;
+    return notificationContext == _scrollableKey.currentState?.notificationContext;
   }
 
-  bool _scrollableNotificationIsFromSameSubtree(BuildContext? notificationContext) {
+  bool _scrollableNotificationIsFromAncestor(BuildContext? notificationContext) {
     if (notificationContext == null) {
       return false;
     }
     BuildContext? currentContext = context;
-    // The notification context of a ScrollNotification points to the RawGestureDetector
-    // of the Scrollable. We get the ScrollableState associated with this notification
-    // by looking up the tree.
-    final ScrollableState? notificationScrollableState = notificationContext.findAncestorStateOfType<ScrollableState>();
-    if (notificationScrollableState == null) {
-      return false;
-    }
     while (currentContext != null) {
       final ScrollableState? scrollableState = currentContext.findAncestorStateOfType<ScrollableState>();
-      if (scrollableState == notificationScrollableState) {
+      if (scrollableState?.notificationContext == notificationContext) {
         return true;
       }
       currentContext = scrollableState?.context;
@@ -3734,7 +3726,6 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
   }
 
   void _handleContextMenuOnParentScroll(ScrollNotification notification) {
-    // Do some preliminary checks to avoid expensive subtree traversal.
     if (notification is! ScrollStartNotification
        && notification is! ScrollEndNotification) {
       return;
@@ -3756,7 +3747,9 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
     if (_isInternalScrollableNotification(notification.context)) {
       return;
     }
-    if (!_scrollableNotificationIsFromSameSubtree(notification.context)) {
+    // The is-from-ancestor check involves expensive subtree traversal,
+    // so do it after the other checks.
+    if (!_scrollableNotificationIsFromAncestor(notification.context)) {
       return;
     }
     _handleContextMenuOnScroll(notification);
@@ -4929,7 +4922,7 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
       return;
     }
 
-    final ScrollableState? state = _scrollableKey.currentState as ScrollableState?;
+    final ScrollableState? state = _scrollableKey.currentState;
     final double increment = ScrollAction.getDirectionalIncrement(state!, intent);
     final double destination = clampDouble(
       position.pixels + increment,
@@ -4953,9 +4946,8 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
     final Rect extentRect = renderEditable.getLocalRectForCaret(
       _value.selection.extent,
     );
-    final ScrollableState? state = _scrollableKey.currentState as ScrollableState?;
     final double increment = ScrollAction.getDirectionalIncrement(
-      state!,
+      _scrollableKey.currentState!,
       ScrollIntent(
         direction: intent.forward ? AxisDirection.down : AxisDirection.up,
         type: ScrollIncrementType.page,
