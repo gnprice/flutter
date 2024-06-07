@@ -2770,7 +2770,9 @@ final class BuildScope {
       }());
     } finally {
       for (final Element element in _dirtyElements) {
-        if (identical(element.buildScope, this)) {
+        final bool inBuildScope = identical(element.buildScope, this);
+        assert(element._inDirtyList == inBuildScope);
+        if (inBuildScope) {
           element._inDirtyList = false;
         }
       }
