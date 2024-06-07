@@ -125,6 +125,32 @@ void main() {
     expect(built, 2);
   });
 
+  testWidgets('Moving LayoutBuilder down after already dirty', (WidgetTester tester) async {
+    int built = 0;
+    final GlobalKey key = GlobalKey();
+    final Widget target = LayoutBuilder(
+      key: key,
+      builder: (BuildContext context, BoxConstraints constraints) {
+        built += 1;
+        MediaQuery.of(context);
+        return const SizedBox();
+      },
+    );
+    expect(built, 0);
+
+    await tester.pumpWidget(MediaQuery(
+      data: const MediaQueryData(size: Size(400.0, 300.0)),
+      child: SizedBox(child: target),
+    ));
+    expect(built, 1);
+
+    await tester.pumpWidget(MediaQuery(
+      data: const MediaQueryData(size: Size(300.0, 400.0)),
+      child: SizedBox(child: SizedBox(child: target)),
+    ));
+    expect(built, 2);
+  });
+
   testWidgets('Moving global key inside a SliverLayoutBuilder', (WidgetTester tester) async {
     final GlobalKey<StatefulWrapperState> key = GlobalKey<StatefulWrapperState>();
 

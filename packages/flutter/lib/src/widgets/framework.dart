@@ -2771,7 +2771,7 @@ final class BuildScope {
     } finally {
       for (final Element element in _dirtyElements) {
         final bool inBuildScope = identical(element.buildScope, this);
-        assert(element._inDirtyList == inBuildScope);
+        assert(!(element._inDirtyList && !inBuildScope));
         if (inBuildScope) {
           element._inDirtyList = false;
         }
