@@ -160,15 +160,10 @@ class _LayoutBuilderElement<ConstraintType extends Constraints> extends RenderOb
 
   @override
   void performRebuild() {
-    // This gets called if markNeedsBuild() is called on us.
-    // That might happen if, e.g., our builder uses Inherited widgets.
-
-    // Force the callback to be called, even if the layout constraints are the
-    // same. This is because that callback may depend on the updated widget
-    // configuration, or an inherited widget.
-    renderObject.markNeedsLayout();
-    _needsBuild = true;
-    super.performRebuild(); // Calls widget.updateRenderObject (a no-op in this case).
+    assert(renderObject.debugDoingThisLayoutWithCallback);
+    // Nothing to do.  We're already inside the layout callback, which will have
+    // decided whether to invoke the widget's builder callback or not.
+    super.performRebuild();
   }
 
   @override
