@@ -1066,7 +1066,7 @@ class PipelineOwner with DiagnosticableTreeMixin {
       }
       assert(_nodesNeedingLayout.isEmpty, 'Child PipelineOwners must not dirty nodes in their parent.');
     } finally {
-      _shouldMergeDirtyNodes = false;
+      assert(!_shouldMergeDirtyNodes);
       assert(() {
         _debugDoingLayout = false;
         _debugDoingChildLayout = false;
