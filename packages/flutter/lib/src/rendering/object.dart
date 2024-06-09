@@ -1859,7 +1859,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     assert(child.parentData != null);
     // print("dropChild: ${toStringShort()}\n"
     //       "       <x- ${child.toStringShort()}");
-    _cleanChildRelayoutBoundary(child);
     child.parentData!.detach();
     child.parentData = null;
     child._parent = null;
@@ -2203,11 +2202,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   ///
   /// This property is set in [layout], and consulted by [markNeedsLayout] in
   /// deciding whether to recursively mark the parent as also needing layout.
-  ///
-  /// This property is initially null, and becomes null again if this
-  /// render object is removed from the tree (with [dropChild]);
-  /// it remains null until the first layout of this render object
-  /// after it was most recently added to the tree.
+  /// The property is null until the first layout of this render object.
   ///
   /// When [_isRelayoutBoundary] is false, then `parent?._isRelayoutBoundary`
   /// may be true or false but not null.  As a result, when it's known that
@@ -2252,20 +2247,13 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   static bool debugCheckingIntrinsics = false;
 
   bool _debugRelayoutBoundaryAlreadyMarkedNeedsLayout() {
-    if (_isRelayoutBoundary == null) {
-      // We don't know where our relayout boundary is yet.
-      return true;
-    }
     RenderObject node = this;
-    while (node._isRelayoutBoundary != true) {
-      assert(node._isRelayoutBoundary == false);
-      assert(node.parent != null);
+    while (node._isRelayoutBoundary == false && node.parent != null) {
       node = node.parent!;
       if ((!node._needsLayout) && (!node._debugDoingThisLayout)) {
         return false;
       }
     }
-    assert(node._isRelayoutBoundary ?? false);
     return true;
   }
 
@@ -2367,19 +2355,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   void markNeedsLayoutForSizedByParentChange() {
     markNeedsLayout();
     markParentNeedsLayout();
-  }
-
-  /// Set [_isRelayoutBoundary] to null throughout this render object's subtree,
-  /// stopping at relayout boundaries.
-  // This is a static method to reduce closure allocation with visitChildren.
-  static void _cleanChildRelayoutBoundary(RenderObject child) {
-    if (child._isRelayoutBoundary != true) {
-      // print("  clear: ${child._isRelayoutBoundary} ${child.toStringShort()}");
-      child._isRelayoutBoundary = null;
-      child.visitChildren(RenderObject._cleanChildRelayoutBoundary);
-    } else {
-      // print("  clear: stopping at ${child.toStringShort()}");
-    }
   }
 
   /// Bootstrap the rendering pipeline by scheduling the very first layout.
