@@ -1853,6 +1853,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     assert(child._parent == this);
     assert(child.attached == attached);
     assert(child.parentData != null);
+    _cleanChildRelayoutBoundary(child);
     child.parentData!.detach();
     child.parentData = null;
     child._parent = null;
@@ -2245,13 +2246,20 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   static bool debugCheckingIntrinsics = false;
 
   bool _debugRelayoutBoundaryAlreadyMarkedNeedsLayout() {
+    if (_isRelayoutBoundary == null) {
+      // We don't know where our relayout boundary is yet.
+      return true;
+    }
     RenderObject node = this;
-    while (node._isRelayoutBoundary == false && node.parent != null) {
+    while (node._isRelayoutBoundary != true) {
+      assert(node._isRelayoutBoundary == false);
+      assert(node.parent != null);
       node = node.parent!;
       if ((!node._needsLayout) && (!node._debugDoingThisLayout)) {
         return false;
       }
     }
+    assert(node._isRelayoutBoundary ?? false);
     return true;
   }
 
@@ -2352,6 +2360,16 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   void markNeedsLayoutForSizedByParentChange() {
     markNeedsLayout();
     markParentNeedsLayout();
+  }
+
+  /// Set [_isRelayoutBoundary] to null throughout this render object's subtree,
+  /// stopping at relayout boundaries.
+  // This is a static method to reduce closure allocation with visitChildren.
+  static void _cleanChildRelayoutBoundary(RenderObject child) {
+    if (child._isRelayoutBoundary != true) {
+      child._isRelayoutBoundary = null;
+      child.visitChildren(RenderObject._cleanChildRelayoutBoundary);
+    }
   }
 
   /// Bootstrap the rendering pipeline by scheduling the very first layout.
