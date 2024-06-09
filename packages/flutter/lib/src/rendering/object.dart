@@ -1857,8 +1857,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     assert(child._parent == this);
     assert(child.attached == attached);
     assert(child.parentData != null);
-    // print("dropChild: ${toStringShort()}\n"
-    //       "       <x- ${child.toStringShort()}");
+    print("dropChild: ${child.toStringShort()}");
     child.parentData!.detach();
     child.parentData = null;
     child._parent = null;
@@ -2250,8 +2249,19 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     RenderObject node = this;
     while (node._isRelayoutBoundary == false && node.parent != null) {
       node = node.parent!;
-      if ((!node._needsLayout) && (!node._debugDoingThisLayout)) {
-        return false;
+      if (!(node._needsLayout || node._debugDoingThisLayout)) {
+        print("BUG:");
+        RenderObject node2 = this;
+        while (node2 != node) {
+          print("  ${node2.toStringShort()}");
+          node2 = node2.parent!;
+        }
+        print(" (BAD) ${node2.toStringShort()}");
+        while (node2.parent != null) {
+          node2 = node2.parent!;
+          print("  ${node2.toStringShort()}");
+        }
+        assert(false);
       }
     }
     return true;
