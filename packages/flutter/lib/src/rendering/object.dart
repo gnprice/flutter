@@ -2136,9 +2136,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     // it to the appropriate dirty list now that an owner is available
     // final int depth = parent == null ? 0 : parent!.depth + 1;
     // print('attach d$depth: $_needsLayout, $_isRelayoutBoundary');
-    if (_needsLayout && _isRelayoutBoundary != null) {
-      // Don't enter this block if we've never laid out at all;
-      // scheduleInitialLayout() will handle it
+    if (_needsLayout) {
       _needsLayout = false;
       markNeedsLayout();
     }
