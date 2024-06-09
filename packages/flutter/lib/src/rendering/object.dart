@@ -2368,7 +2368,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   /// stopping at relayout boundaries.
   // This is a static method to reduce closure allocation with visitChildren.
   static void _cleanChildRelayoutBoundary(RenderObject child) {
-    print('_cleanChildRelayoutBoundary: depth ${child.depth}');
     if (child._isRelayoutBoundary != true) {
       child.visitChildren(_cleanChildRelayoutBoundary);
       child._isRelayoutBoundary = null;
@@ -2377,7 +2376,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
 
   // This is a static method to reduce closure allocation with visitChildren.
   static void _propagateRelayoutBoundaryToChild(RenderObject child) {
-    print('_propagateRelayoutBoundaryToChild: depth ${child.depth}');
     if (child._isRelayoutBoundary ?? false) {
       return;
     }
@@ -2517,16 +2515,12 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     ));
     assert(!_debugDoingThisResize);
     assert(!_debugDoingThisLayout);
-    print('isRelayoutBoundary d$depth $runtimeType: ${!parentUsesSize} || $sizedByParent || ${constraints.isTight} || ${parent is! RenderObject}');
     final bool isRelayoutBoundary = !parentUsesSize || sizedByParent || constraints.isTight || parent is! RenderObject;
     assert(() {
       _debugCanParentUseSize = parentUsesSize;
       return true;
     }());
 
-    print('layout: relayout boundary ${_relayoutBoundary?.depth} -> ${relayoutBoundary.depth}');
-    print('  _needsLayout $_needsLayout, constraints change ${constraints != _constraints}');
-    print('  constraints $_constraints -> $constraints');
     if (!_needsLayout && constraints == _constraints) {
       assert(() {
         // in case parentUsesSize changed since the last invocation, set size
