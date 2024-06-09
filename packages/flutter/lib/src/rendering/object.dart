@@ -1034,9 +1034,11 @@ class PipelineOwner with DiagnosticableTreeMixin {
       return true;
     }());
     try {
+      // print('flushLayout');
       while (_nodesNeedingLayout.isNotEmpty) {
         assert(!_shouldMergeDirtyNodes);
         final List<RenderObject> dirtyNodes = _nodesNeedingLayout;
+        // print('flushLayout round: ${dirtyNodes.length} nodes');
         _nodesNeedingLayout = <RenderObject>[];
         dirtyNodes.sort((RenderObject a, RenderObject b) => a.depth - b.depth);
         for (int i = 0; i < dirtyNodes.length; i++) {
@@ -2128,6 +2130,8 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     _owner = owner;
     // If the node was dirtied in some way while unattached, make sure to add
     // it to the appropriate dirty list now that an owner is available
+    // final int depth = parent == null ? 0 : parent!.depth + 1;
+    // print('attach d$depth: $_needsLayout, $_isRelayoutBoundary');
     if (_needsLayout && _isRelayoutBoundary != null) {
       // Don't enter this block if we've never laid out at all;
       // scheduleInitialLayout() will handle it
@@ -2302,6 +2306,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   /// If [sizedByParent] has changed, calls
   /// [markNeedsLayoutForSizedByParentChange] instead of [markNeedsLayout].
   void markNeedsLayout() {
+    // print('markNeedsLayout d$depth: _needsLayout $_needsLayout, _isRelayoutBoundary $_isRelayoutBoundary');
     assert(_debugCanPerformMutations);
     if (_needsLayout) {
       assert(_debugRelayoutBoundaryAlreadyMarkedNeedsLayout());

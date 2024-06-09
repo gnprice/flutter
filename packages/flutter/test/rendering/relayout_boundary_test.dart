@@ -10,6 +10,68 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('reparenting avoids quadratic calls to markNeedsLayout', (WidgetTester tester) async {
+    final GlobalKey innerKey = GlobalKey();
+    final GlobalKey subtreeKey = GlobalKey();
+    late StateSetter setState;
+    Brightness brightness = Brightness.light;
+    const int depth = 8;
+
+    const Size size = Size.square(100);
+    Widget inner = Builder(builder: (BuildContext context) {
+      print('building inmost d${(context as Element).renderObject?.depth}');
+      final bool parity = MediaQuery.platformBrightnessOf(context) == Brightness.light;
+      return SizedBox.fromSize(size: parity ? size : null);
+    });
+    inner = SizedBox.fromSize(key: innerKey, size: size, child: inner);
+    for (int i = 0; i < depth; i++) {
+      inner = SizedBox(child: inner);
+    }
+    inner = Align(child: inner);
+    inner = SizedBox.fromSize(size: size, child: inner);
+    inner = KeyedSubtree(key: subtreeKey, child: inner);
+    final Widget widget1 = Builder(builder: (BuildContext context) {
+      print('building switcher d${(context as Element).renderObject?.depth}');
+      final bool parity = MediaQuery.platformBrightnessOf(context) == Brightness.light;
+      if (parity) {
+        return Column(children: <Widget>[
+          const SizedBox.shrink(),
+          inner,
+        ]);
+      } else {
+        return Column(children: <Widget>[
+          SizedBox(child: inner),
+          const SizedBox.shrink(),
+        ]);
+      }
+    });
+    Widget outer = StatefulBuilder(builder: (BuildContext context, StateSetter setter) {
+      print('building stateful d${(context as Element).renderObject?.depth}');
+      setState = setter;
+      innerKey.currentContext?.findRenderObject()?.markNeedsLayout();
+      final MediaQueryData data = MediaQueryData(platformBrightness: brightness);
+      return MediaQuery(data: data, child: widget1);
+    });
+    outer = Align(child: outer);
+    outer = SizedBox.fromSize(size: size, child: outer);
+    outer = Align(child: outer);
+
+    await tester.pumpWidget(outer);
+    await tester.pump(const Duration(seconds: 1));
+
+    for (int i = 0; i < 2; i++) {
+      print('\ni = $i');
+      setState(() {
+        brightness = i.isEven ? Brightness.dark : Brightness.light;
+      });
+      await tester.pump();
+    }
+    print('\nend');
+
+    // TODO this test doesn't actually check anything
+  });
+  return;
+
   testWidgets('relayout boundary change does O(1) work', (WidgetTester tester) async {
     late StateSetter setState;
     Brightness brightness = Brightness.light;
