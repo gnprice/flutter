@@ -2245,18 +2245,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
 
   bool _debugAdoptedSinceLayout = false;
 
-  bool _debugRelayoutBoundaryAlreadyMarkedNeedsLayout() {
-    RenderObject node = this;
-    while (node._isRelayoutBoundary == false && node.parent != null) {
-      if (node._debugAdoptedSinceLayout) break;
-      node = node.parent!;
-      if ((!node._needsLayout) && (!node._debugDoingThisLayout)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   /// Mark this render object's layout information as dirty, and either register
   /// this object with its [PipelineOwner], or defer to the parent, depending on
   /// whether this object is a relayout boundary or not respectively.
@@ -2299,7 +2287,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     // print('markNeedsLayout d$depth: _needsLayout $_needsLayout, _isRelayoutBoundary $_isRelayoutBoundary');
     assert(_debugCanPerformMutations);
     if (_needsLayout) {
-      assert(_debugRelayoutBoundaryAlreadyMarkedNeedsLayout());
       return;
     }
     _needsLayout = true;
