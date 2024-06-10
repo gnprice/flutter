@@ -1857,7 +1857,9 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     assert(child._parent == this);
     assert(child.attached == attached);
     assert(child.parentData != null);
-    print("dropChild: ${child.toStringShort()}");
+    print("dropChild: ${toStringShort()}\n"
+          "       <x- ${child.toStringShort()}");
+    _simulateClearRelayoutBoundary(child);
     child.parentData!.detach();
     child.parentData = null;
     child._parent = null;
@@ -1867,6 +1869,15 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     markNeedsLayout();
     markNeedsCompositingBitsUpdate();
     markNeedsSemanticsUpdate();
+  }
+
+  static void _simulateClearRelayoutBoundary(RenderObject child) {
+    if (child._isRelayoutBoundary == true) {
+      print("  clear: stopping at ${child.toStringShort()}");
+      return;
+    }
+    print("  clear: ${child._isRelayoutBoundary} ${child.toStringShort()}");
+    child.visitChildren(_simulateClearRelayoutBoundary);
   }
 
   /// Calls visitor for each immediate child of this render object.
@@ -2250,6 +2261,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     while (node._isRelayoutBoundary == false && node.parent != null) {
       node = node.parent!;
       if (!(node._needsLayout || node._debugDoingThisLayout)) {
+        print("");
         print("BUG:");
         RenderObject node2 = this;
         while (node2 != node) {
@@ -2261,6 +2273,8 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
           node2 = node2.parent!;
           print("  ${node2.toStringShort()}");
         }
+        print("_nodesNeedingLayout: ${owner?._nodesNeedingLayout}");
+        print("");
         assert(false);
       }
     }
