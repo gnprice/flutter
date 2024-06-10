@@ -5,6 +5,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -202,6 +203,7 @@ void main() {
   });
 
   testWidgets('Focus keep-alive works with GlobalKey reparenting', (WidgetTester tester) async {
+    debugPrintLayouts = true;
     final FocusNode focusNode = FocusNode();
     addTearDown(focusNode.dispose);
 
@@ -235,6 +237,7 @@ void main() {
     await tester.pumpWidget(makeTest('test'));
     await tester.pump(); // in case the AutomaticKeepAlive widget thinks it needs a cleanup frame
     expect(find.byType(TextField, skipOffstage: false), findsOneWidget);
+    debugPrintLayouts = false;
   });
 
   testWidgets('TextField with decoration:null', (WidgetTester tester) async {
