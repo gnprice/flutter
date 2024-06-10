@@ -1838,7 +1838,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     markNeedsLayout();
     markNeedsCompositingBitsUpdate();
     markNeedsSemanticsUpdate();
-    assert(child._debugAdoptedSinceLayout = true);
     child._parent = this;
     if (attached) {
       child.attach(_owner!);
@@ -2243,8 +2242,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   /// (where it will always be false).
   static bool debugCheckingIntrinsics = false;
 
-  bool _debugAdoptedSinceLayout = false;
-
   /// Mark this render object's layout information as dirty, and either register
   /// this object with its [PipelineOwner], or defer to the parent, depending on
   /// whether this object is a relayout boundary or not respectively.
@@ -2392,7 +2389,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
-      _debugAdoptedSinceLayout = false;
       return true;
     }());
     _needsLayout = false;
@@ -2547,7 +2543,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
-      _debugAdoptedSinceLayout = false;
       return true;
     }());
     _needsLayout = false;
