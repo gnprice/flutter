@@ -2342,11 +2342,11 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     _needsLayout = true;
     assert(this.parent != null);
     final RenderObject parent = this.parent!;
-    if (!_doingThisLayoutWithCallback) {
-      parent.markNeedsLayout();
-    } else {
+    if (_doingThisLayoutWithCallback) {
       assert(parent._debugDoingThisLayout);
+      return;
     }
+    parent.markNeedsLayout();
     assert(parent == this.parent);
   }
 
