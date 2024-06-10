@@ -1840,6 +1840,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     markNeedsLayout();
     markNeedsCompositingBitsUpdate();
     markNeedsSemanticsUpdate();
+    assert(child._debugAdoptedSinceLayout = true);
     child._parent = this;
     if (attached) {
       child.attach(_owner!);
@@ -2256,9 +2257,12 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   /// (where it will always be false).
   static bool debugCheckingIntrinsics = false;
 
+  bool _debugAdoptedSinceLayout = false;
+
   bool _debugRelayoutBoundaryAlreadyMarkedNeedsLayout() {
     RenderObject node = this;
     while (node._isRelayoutBoundary == false && node.parent != null) {
+      if (node._debugAdoptedSinceLayout) break;
       node = node.parent!;
       if (!(node._needsLayout || node._debugDoingThisLayout)) {
         print("");
@@ -2433,6 +2437,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
+      _debugAdoptedSinceLayout = false;
       return true;
     }());
     _needsLayout = false;
@@ -2590,6 +2595,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
+      _debugAdoptedSinceLayout = false;
       return true;
     }());
     _needsLayout = false;
