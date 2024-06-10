@@ -1833,8 +1833,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       assert(node != child); // indicates we are about to create a cycle
       return true;
     }());
-    // print("adoptChild: ${toStringShort()}\n"
-    //       "         <- ${child.toStringShort()}");
 
     setupParentData(child);
     markNeedsLayout();
@@ -1858,9 +1856,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     assert(child._parent == this);
     assert(child.attached == attached);
     assert(child.parentData != null);
-    print("dropChild: ${toStringShort()}\n"
-          "       <x- ${child.toStringShort()}");
-    _simulateClearRelayoutBoundary(child);
     child.parentData!.detach();
     child.parentData = null;
     child._parent = null;
@@ -1870,15 +1865,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     markNeedsLayout();
     markNeedsCompositingBitsUpdate();
     markNeedsSemanticsUpdate();
-  }
-
-  static void _simulateClearRelayoutBoundary(RenderObject child) {
-    if (child._isRelayoutBoundary == true) {
-      print("  clear: stopping at ${child.toStringShort()}");
-      return;
-    }
-    print("  clear: ${child._isRelayoutBoundary} ${child.toStringShort()}");
-    child.visitChildren(_simulateClearRelayoutBoundary);
   }
 
   /// Calls visitor for each immediate child of this render object.
@@ -2264,23 +2250,8 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     while (node._isRelayoutBoundary == false && node.parent != null) {
       if (node._debugAdoptedSinceLayout) break;
       node = node.parent!;
-      if (!(node._needsLayout || node._debugDoingThisLayout)) {
-        print("");
-        print("BUG:");
-        RenderObject node2 = this;
-        while (node2 != node) {
-          print("  ${node2.toStringShort()}");
-          node2 = node2.parent!;
-        }
-        print(" (BAD) ${node2.toStringShort()}");
-        while (node2.parent != null) {
-          node2 = node2.parent!;
-          print("  ${node2.toStringShort()}");
-        }
-        print("_nodesNeedingLayout: ${owner?._nodesNeedingLayout}");
-        print("_debugActiveLayout: $_debugActiveLayout");
-        print("");
-        assert(false);
+      if ((!node._needsLayout) && (!node._debugDoingThisLayout)) {
+        return false;
       }
     }
     return true;
@@ -2325,7 +2296,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   /// If [sizedByParent] has changed, calls
   /// [markNeedsLayoutForSizedByParentChange] instead of [markNeedsLayout].
   void markNeedsLayout() {
-    print('markNeedsLayout d$depth ${toStringShort()}');
+    // print('markNeedsLayout d$depth: _needsLayout $_needsLayout, _isRelayoutBoundary $_isRelayoutBoundary');
     assert(_debugCanPerformMutations);
     if (_needsLayout) {
       assert(_debugRelayoutBoundaryAlreadyMarkedNeedsLayout());
@@ -2431,9 +2402,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _reportException('performLayout', e, stack);
     }
     assert(() {
-      if (debugPrintLayouts) {
-        debugPrint('Layout complete: $this');
-      }
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
@@ -2589,9 +2557,6 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _reportException('performLayout', e, stack);
     }
     assert(() {
-      if (debugPrintLayouts) {
-        debugPrint('Layout complete: $this');
-      }
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
