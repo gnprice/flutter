@@ -2274,6 +2274,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
           print("  ${node2.toStringShort()}");
         }
         print("_nodesNeedingLayout: ${owner?._nodesNeedingLayout}");
+        print("_debugActiveLayout: $_debugActiveLayout");
         print("");
         assert(false);
       }
@@ -2320,7 +2321,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   /// If [sizedByParent] has changed, calls
   /// [markNeedsLayoutForSizedByParentChange] instead of [markNeedsLayout].
   void markNeedsLayout() {
-    // print('markNeedsLayout d$depth: _needsLayout $_needsLayout, _isRelayoutBoundary $_isRelayoutBoundary');
+    print('markNeedsLayout d$depth ${toStringShort()}');
     assert(_debugCanPerformMutations);
     if (_needsLayout) {
       assert(_debugRelayoutBoundaryAlreadyMarkedNeedsLayout());
@@ -2426,6 +2427,9 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _reportException('performLayout', e, stack);
     }
     assert(() {
+      if (debugPrintLayouts) {
+        debugPrint('Layout complete: $this');
+      }
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
@@ -2580,6 +2584,9 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       _reportException('performLayout', e, stack);
     }
     assert(() {
+      if (debugPrintLayouts) {
+        debugPrint('Layout complete: $this');
+      }
       _debugActiveLayout = debugPreviousActiveLayout;
       _debugDoingThisLayout = false;
       _debugMutationsLocked = false;
