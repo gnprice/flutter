@@ -1833,6 +1833,8 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       assert(node != child); // indicates we are about to create a cycle
       return true;
     }());
+    // print("adoptChild: ${toStringShort()}\n"
+    //       "         <- ${child.toStringShort()}");
 
     setupParentData(child);
     markNeedsLayout();
@@ -1855,6 +1857,8 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
     assert(child._parent == this);
     assert(child.attached == attached);
     assert(child.parentData != null);
+    // print("dropChild: ${toStringShort()}\n"
+    //       "       <x- ${child.toStringShort()}");
     _cleanChildRelayoutBoundary(child);
     child.parentData!.detach();
     child.parentData = null;
@@ -2372,8 +2376,11 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
   // This is a static method to reduce closure allocation with visitChildren.
   static void _cleanChildRelayoutBoundary(RenderObject child) {
     if (child._isRelayoutBoundary != true) {
+      // print("  clear: ${child._isRelayoutBoundary} ${child.toStringShort()}");
       child._isRelayoutBoundary = null;
       child.visitChildren(RenderObject._cleanChildRelayoutBoundary);
+    } else {
+      // print("  clear: stopping at ${child.toStringShort()}");
     }
   }
 
