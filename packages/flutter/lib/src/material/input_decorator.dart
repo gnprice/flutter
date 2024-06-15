@@ -1278,7 +1278,11 @@ class _RenderDecoration extends RenderBox with SlottedContainerRenderObjectMixin
     );
     return switch (baseline) {
       TextBaseline.alphabetic => 0.0,
-      TextBaseline.ideographic => (input.getDryBaseline(layout.inputConstraints, TextBaseline.ideographic) ?? input.getDryLayout(layout.inputConstraints).height) - (input.getDryBaseline(layout.inputConstraints, TextBaseline.alphabetic) ?? input.getDryLayout(layout.inputConstraints).height),
+      TextBaseline.ideographic =>
+          (input.getDryBaseline(layout.inputConstraints, TextBaseline.ideographic)
+            ?? input.getDryLayout(layout.inputConstraints).height)
+        - (input.getDryBaseline(layout.inputConstraints, TextBaseline.alphabetic)
+            ?? input.getDryLayout(layout.inputConstraints).height),
     } + layout.baseline;
   }
 
