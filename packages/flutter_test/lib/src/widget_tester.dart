@@ -677,22 +677,19 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
              widgetsBinding.framePolicy == LiveTestWidgetsFlutterBindingFramePolicy.benchmark;
     }());
 
-    Object? caughtException;
-    StackTrace? caughtStackTrace;
-    void handleError(dynamic error, StackTrace stackTrace) {
-      caughtException ??= error;
-      caughtStackTrace ??= stackTrace;
-    }
+    Object? error;
+    StackTrace? trace;
+    void handleError(dynamic e, StackTrace s) { error ??= e; trace ??= s; }
 
     await Future<void>.microtask(() { binding.handleBeginFrame(duration); }).catchError(handleError);
     await idle();
     await Future<void>.microtask(() { binding.handleDrawFrame(); }).catchError(handleError);
     await idle();
 
-    if (caughtException != null) {
-      final StackTrace trace = Chain(
-        <StackTrace>[caughtStackTrace!, StackTrace.current].map(Trace.from));
-      Error.throwWithStackTrace(caughtException!, trace);
+    if (error != null) {
+      final StackTrace wholeTrace = Chain(
+        <StackTrace>[trace!, StackTrace.current].map(Trace.from));
+      Error.throwWithStackTrace(error!, wholeTrace);
     }
   }
 
