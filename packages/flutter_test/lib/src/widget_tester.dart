@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:matcher/expect.dart' as matcher_expect;
 import 'package:meta/meta.dart';
+import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/scaffolding.dart' as test_package;
 
 import 'binding.dart';
@@ -676,8 +677,12 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
              widgetsBinding.framePolicy == LiveTestWidgetsFlutterBindingFramePolicy.benchmark;
     }());
 
-    dynamic caughtException;
-    void handleError(dynamic error, StackTrace stackTrace) => caughtException ??= error;
+    Object? caughtException;
+    StackTrace? caughtStackTrace;
+    void handleError(dynamic error, StackTrace stackTrace) {
+      caughtException ??= error;
+      caughtStackTrace ??= stackTrace;
+    }
 
     await Future<void>.microtask(() { binding.handleBeginFrame(duration); }).catchError(handleError);
     await idle();
@@ -685,7 +690,9 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
     await idle();
 
     if (caughtException != null) {
-      throw caughtException as Object; // ignore: only_throw_errors, rethrowing caught exception.
+      final StackTrace trace = Chain(
+        <StackTrace>[caughtStackTrace!, StackTrace.current].map(Trace.from));
+      Error.throwWithStackTrace(caughtException!, trace);
     }
   }
 
