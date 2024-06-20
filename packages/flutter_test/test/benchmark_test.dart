@@ -24,7 +24,7 @@ class TestBinding extends LiveTestWidgetsFlutterBinding {
   @override
   void handleDrawFrame() {
     if (!handleBeginFrameMicrotaskRun) {
-      throw "Microtasks scheduled by 'handledBeginFrame' must be run before 'handleDrawFrame'.";
+      throw Exception("Microtasks scheduled by 'handledBeginFrame' must be run before 'handleDrawFrame'.");
     }
     framesDrawn += 1;
     super.handleDrawFrame();
