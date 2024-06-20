@@ -679,17 +679,26 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
 
     Object? error;
     StackTrace? trace;
-    void handleError(dynamic e, StackTrace s) { error ??= e; trace ??= s; }
 
-    await Future<void>.microtask(() { binding.handleBeginFrame(duration); }).catchError(handleError);
+    try {
+      await Future<void>.microtask(() => binding.handleBeginFrame(duration));
+    } catch (e, s) {
+      error ??= e; trace ??= s;
+    }
     await idle();
-    await Future<void>.microtask(() { binding.handleDrawFrame(); }).catchError(handleError);
+
+    try {
+      await Future<void>.microtask(() => binding.handleDrawFrame());
+    } catch (e, s) {
+      error ??= e; trace ??= s;
+    }
     await idle();
 
     if (error != null) {
       final StackTrace wholeTrace = Chain(
         <StackTrace>[trace!, StackTrace.current].map(Trace.from));
-      Error.throwWithStackTrace(error!, wholeTrace);
+      Error.throwWithStackTrace(error, trace);
+      Error.throwWithStackTrace(error, wholeTrace);
     }
   }
 
