@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:clock/clock.dart';
@@ -1793,6 +1794,10 @@ class LiveTestWidgetsFlutterBinding extends TestWidgetsFlutterBinding {
   @override
   void handleDrawFrame() {
     assert(_doDrawThisFrame != null);
+    if (Random().nextInt(1000) < 1
+        && StackTrace.current.toString().contains('pumpBenchmark')) {
+      _doDrawThisFrame = null;
+    }
     if (_doDrawThisFrame!) {
       super.handleDrawFrame();
     }
