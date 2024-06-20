@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:matcher/expect.dart' as matcher_expect;
 import 'package:meta/meta.dart';
-import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/scaffolding.dart' as test_package;
 
 import 'binding.dart';
@@ -678,27 +677,24 @@ class WidgetTester extends WidgetController implements HitTestDispatcher, Ticker
     }());
 
     Object? error;
-    StackTrace? trace;
+    StackTrace? stackTrace;
 
     await null;
     try {
       binding.handleBeginFrame(duration);
     } catch (e, s) {
-      error ??= e; trace ??= s;
+      error ??= e; stackTrace ??= s;
     }
     await idle();
     try {
       binding.handleDrawFrame();
     } catch (e, s) {
-      error ??= e; trace ??= s;
+      error ??= e; stackTrace ??= s;
     }
     await idle();
 
     if (error != null) {
-      final StackTrace wholeTrace = Chain(
-        <StackTrace>[trace!, StackTrace.current].map(Trace.from));
-      Error.throwWithStackTrace(error, trace);
-      Error.throwWithStackTrace(error, wholeTrace);
+      Error.throwWithStackTrace(error, stackTrace!);
     }
   }
 
