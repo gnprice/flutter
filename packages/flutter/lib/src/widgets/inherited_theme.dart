@@ -162,6 +162,23 @@ abstract class InheritedTheme<T> extends InheritedModel<ThemeSelector<Object?, O
     );
     return CapturedThemes._(themes);
   }
+
+  T get data;
+
+  @override
+  bool updateShouldNotifyDependent(
+    InheritedTheme<T> oldWidget,
+    Set<ThemeSelector<T, Object?>> dependencies,
+  ) {
+    for (final ThemeSelector<T, Object?> selector in dependencies) {
+      final Object? oldValue = selector(oldWidget.data);
+      final Object? newValue = selector(data);
+      if (oldValue != newValue) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 /// Stores a list of captured [InheritedTheme]s that can be wrapped around a
