@@ -22,7 +22,7 @@ import 'inherited_theme.dart';
 /// Controls the default properties of icons in a widget subtree.
 ///
 /// The icon theme is honored by [Icon] and [ImageIcon] widgets.
-class IconTheme extends InheritedTheme<IconThemeData, Object?> {
+class IconTheme extends InheritedTheme<IconThemeData> {
   /// Creates an icon theme that controls properties of descendant widgets.
   const IconTheme({super.key, required this.data, required super.child});
 
@@ -102,13 +102,10 @@ class IconTheme extends InheritedTheme<IconThemeData, Object?> {
   ///
   /// When this value changes, a notification is sent to the [context]
   /// to trigger an update.
-  static T select<T>(BuildContext context, T Function(IconThemeData) selector) {
-    final ThemeSelector<IconThemeData, T> themeSelector = ThemeSelector<IconThemeData, T>.from(
-      selector,
-    );
+  static T select<T>(BuildContext context, ThemeSelector<IconThemeData, T> selector) {
     final IconThemeData theme =
-        InheritedModel.inheritFrom<IconTheme>(context, aspect: themeSelector)!.data;
-    return themeSelector.select(theme);
+        InheritedModel.inheritFrom<IconTheme>(context, aspect: selector)!.data;
+    return selector(theme);
   }
 
   @override
@@ -128,8 +125,8 @@ class IconTheme extends InheritedTheme<IconThemeData, Object?> {
     Set<ThemeSelector<IconThemeData, Object?>> dependencies,
   ) {
     for (final ThemeSelector<IconThemeData, Object?> selector in dependencies) {
-      final Object? oldValue = selector.select(oldWidget.data);
-      final Object? newValue = selector.select(data);
+      final Object? oldValue = selector(oldWidget.data);
+      final Object? newValue = selector(data);
       if (oldValue != newValue) {
         return true;
       }

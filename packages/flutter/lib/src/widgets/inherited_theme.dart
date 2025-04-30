@@ -8,31 +8,42 @@ library;
 import 'framework.dart';
 import 'inherited_model.dart';
 
-/// A generic selector interface for theme data.
+/// Signature for a function that extracts from a "theme data" object
+/// a specific value.
 ///
-/// This interface allows for selecting specific aspects of theme data without
-/// coupling to specific theme implementations like Material or Cupertino.
-abstract interface class ThemeSelector<T, V> {
-  /// Creates a [ThemeSelector] from a function.
-  ///
-  /// This factory constructor allows for creating a selector using a lambda syntax.
-  factory ThemeSelector.from(V Function(T) selector) = _FunctionThemeSelector<T, V>;
+/// This is used with subclasses of [InheritedTheme],
+/// as the callback argument to methods such as [IconTheme.select].
+///
+/// For example, the function might extract from the theme's data
+/// a single field that defines a particular color or text style
+/// which is used in a given widget's build method.
+typedef ThemeSelector<T, V> = V Function(T themeData);
 
-  /// Selects a value of type [T] from the theme data.
-  ///
-  /// The actual theme data type is determined by the implementation.
-  V select(T themeData);
-}
-
-/// A [ThemeSelector] implementation that wraps a function.
-class _FunctionThemeSelector<T, V> implements ThemeSelector<T, V> {
-  const _FunctionThemeSelector(this._selector);
-
-  final V Function(T) _selector;
-
-  @override
-  V select(T themeData) => _selector(themeData);
-}
+// /// A generic selector interface for theme data.
+// ///
+// /// This interface allows for selecting specific aspects of theme data without
+// /// coupling to specific theme implementations like Material or Cupertino.
+// abstract interface class ThemeSelector<T, V> {
+//   /// Creates a [ThemeSelector] from a function.
+//   ///
+//   /// This factory constructor allows for creating a selector using a lambda syntax.
+//   factory ThemeSelector.from(V Function(T) selector) = _FunctionThemeSelector<T, V>;
+//
+//   /// Selects a value of type [T] from the theme data.
+//   ///
+//   /// The actual theme data type is determined by the implementation.
+//   V select(T themeData);
+// }
+//
+// /// A [ThemeSelector] implementation that wraps a function.
+// class _FunctionThemeSelector<T, V> implements ThemeSelector<T, V> {
+//   const _FunctionThemeSelector(this._selector);
+//
+//   final V Function(T) _selector;
+//
+//   @override
+//   V select(T themeData) => _selector(themeData);
+// }
 
 // Examples can assume:
 // TooltipThemeData data = const TooltipThemeData();
@@ -60,7 +71,7 @@ class _FunctionThemeSelector<T, V> implements ThemeSelector<T, V> {
 ///
 /// ** See code in examples/api/lib/widgets/inherited_theme/inherited_theme.0.dart **
 /// {@end-tool}
-abstract class InheritedTheme<T, V> extends InheritedModel<ThemeSelector<T, V>> {
+abstract class InheritedTheme<T> extends InheritedModel<ThemeSelector<Object?, Object?>> {
   /// Abstract const constructor. This constructor enables subclasses to provide
   /// const constructors so that they can be used in const expressions.
 
@@ -114,10 +125,10 @@ abstract class InheritedTheme<T, V> extends InheritedModel<ThemeSelector<T, V>> 
   static CapturedThemes capture({required BuildContext from, required BuildContext? to}) {
     if (from == to) {
       // Nothing to capture.
-      return CapturedThemes._(const <InheritedTheme<Object?, Object?>>[]);
+      return CapturedThemes._(const <InheritedTheme<Object?>>[]);
     }
 
-    final List<InheritedTheme<Object?, Object?>> themes = <InheritedTheme<Object?, Object?>>[];
+    final List<InheritedTheme<Object?>> themes = <InheritedTheme<Object?>>[];
     final Set<Type> themeTypes = <Type>{};
     late bool debugDidFindAncestor;
     assert(() {
@@ -132,7 +143,7 @@ abstract class InheritedTheme<T, V> extends InheritedModel<ThemeSelector<T, V>> 
         }());
         return false;
       }
-      if (ancestor case InheritedElement(widget: final InheritedTheme<Object?, Object?> theme)) {
+      if (ancestor case InheritedElement(widget: final InheritedTheme<Object?> theme)) {
         final Type themeType = theme.runtimeType;
         // Only remember the first theme of any type. This assumes
         // that inherited themes completely shadow ancestors of the
@@ -160,7 +171,7 @@ abstract class InheritedTheme<T, V> extends InheritedModel<ThemeSelector<T, V>> 
 class CapturedThemes {
   CapturedThemes._(this._themes);
 
-  final List<InheritedTheme<Object?, Object?>> _themes;
+  final List<InheritedTheme<Object?>> _themes;
 
   /// Wraps a `child` [Widget] in the [InheritedTheme]s captured in this object.
   Widget wrap(Widget child) {
@@ -171,13 +182,13 @@ class CapturedThemes {
 class _CaptureAll extends StatelessWidget {
   const _CaptureAll({required this.themes, required this.child});
 
-  final List<InheritedTheme<Object?, Object?>> themes;
+  final List<InheritedTheme<Object?>> themes;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     Widget wrappedChild = child;
-    for (final InheritedTheme<Object?, Object?> theme in themes) {
+    for (final InheritedTheme<Object?> theme in themes) {
       wrappedChild = theme.wrap(context, wrappedChild);
     }
     return wrappedChild;
